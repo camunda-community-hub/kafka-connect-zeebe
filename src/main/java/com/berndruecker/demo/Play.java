@@ -1,4 +1,4 @@
-package zeefka;
+package com.berndruecker.demo;
 
 import io.zeebe.gateway.ZeebeClient;
 import io.zeebe.gateway.api.clients.JobClient;

@@ -1,4 +1,4 @@
-package zeefka;
+package com.berndruecker.demo;
 
 import java.util.Properties;
 
@@ -7,7 +7,7 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
-public class SendMessage {
+public class SendKafkaMessage {
 
   public static void main(String[] argv) throws Exception {
     // Configure the Producer

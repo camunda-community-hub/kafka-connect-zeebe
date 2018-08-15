@@ -1,4 +1,4 @@
-package zeefka;
+package com.berndruecker.demo.kafka.connect.zeebe;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -17,9 +17,9 @@ public final class ZeebeSinkConnector extends SinkConnector {
   
   private URI zeebeBrokerAddress;
   
-  private String topic;
   private String correlationKeyJsonPath;
   private String messageNameJsonPath;
+  private String startEventMapping;
 
   @Override
   public Class<? extends Task> taskClass() {
@@ -32,6 +32,7 @@ public final class ZeebeSinkConnector extends SinkConnector {
     configDef.define(Constants.CONFIG_ZEEBE_BROKER_ADDRESS, Type.STRING, "localhost:26500", Importance.HIGH, "Zeebe address (<host>:<port>)");
     configDef.define(Constants.CONFIG_CORRELATION_KEY_JSONPATH, Type.STRING, "$.correlationKey", Importance.HIGH, "JsonPath to gather correlation key to be used to correlate to a workflow instance from the message payload (e.g. $.correlationKey)");
     configDef.define(Constants.CONFIG_MESSAGE_NAME_JSONPATH, Type.STRING, "$.messageName", Importance.HIGH, "JsonPath to gather message name to be send to Zeebe (e.g. $.messageName)");
+    configDef.define(Constants.CONFIG_START_EVENT_MAPPING, Type.STRING, "", Importance.LOW, "Mapping for events that start new workflow instances as a workaround for a Zeebe feature (e.g. myMessage:myProcess,otherMessage:otherProcess)");
     return configDef;
   }
 
@@ -44,6 +45,7 @@ public final class ZeebeSinkConnector extends SinkConnector {
       config.put(Constants.CONFIG_ZEEBE_BROKER_ADDRESS, zeebeBrokerAddress.toString());
       config.put(Constants.CONFIG_CORRELATION_KEY_JSONPATH, correlationKeyJsonPath);
       config.put(Constants.CONFIG_MESSAGE_NAME_JSONPATH, messageNameJsonPath);
+      config.put(Constants.CONFIG_START_EVENT_MAPPING, startEventMapping);
 
       configs.add(config);
     }
@@ -61,6 +63,7 @@ public final class ZeebeSinkConnector extends SinkConnector {
 
     correlationKeyJsonPath = props.get(Constants.CONFIG_CORRELATION_KEY_JSONPATH);
     messageNameJsonPath = props.get(Constants.CONFIG_MESSAGE_NAME_JSONPATH);
+    startEventMapping = props.get(Constants.CONFIG_START_EVENT_MAPPING);
   }
 
   @Override

@@ -1,7 +1,7 @@
-package zeefka;
+package com.berndruecker.demo.kafka.connect.zeebe;
 
   import org.apache.kafka.connect.source.SourceConnector;
-  import org.apache.kafka.connect.connector.Task;
+import org.apache.kafka.connect.connector.Task;
   import org.apache.kafka.common.config.ConfigDef;
   import org.apache.kafka.common.config.ConfigDef.Type;
   import org.apache.kafka.common.config.ConfigDef.Range;

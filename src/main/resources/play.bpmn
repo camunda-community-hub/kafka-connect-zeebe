@@ -26,7 +26,7 @@
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="sendMessage" />
         <zeebe:taskHeaders>
-          <zeebe:header key="topic" />
+          <zeebe:header key="topic" value="blabla"/>
         </zeebe:taskHeaders>
       </bpmn:extensionElements>
       <bpmn:incoming>SequenceFlow_0siql8r</bpmn:incoming>
@@ -35,7 +35,9 @@
     <bpmn:sequenceFlow id="SequenceFlow_0tgfizs" sourceRef="ServiceTask_0tnty4a" targetRef="IntermediateThrowEvent_061efmr" />
   </bpmn:process>
   <bpmn:message id="Message_168848a" name="OrderPaid">
-    <bpmn:extensionElements />
+    <bpmn:extensionElements>
+     <zeebe:subscription correlationKey="$.orderId" />
+    </bpmn:extensionElements>
   </bpmn:message>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="play">
