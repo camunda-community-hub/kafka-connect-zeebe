@@ -1,4 +1,4 @@
-package com.berndruecker.demo.kafka.connect.zeebe;
+package io.berndruecker.demo.kafka.connect.zeebe;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -75,7 +75,7 @@ public final class ZeebeSinkTask extends SinkTask {
         if (startEventMapping.containsKey(messageName)) {
           String workflowDefinitionName = startEventMapping.get(messageName);
           WorkflowInstanceEvent workflowInstanceEvent = //
-              zeebe.topicClient().workflowClient().newCreateInstanceCommand() //
+              zeebe.workflowClient().newCreateInstanceCommand() //
                 .bpmnProcessId(workflowDefinitionName) //
                 .latestVersion() //
                 .payload(payload) //
@@ -83,7 +83,7 @@ public final class ZeebeSinkTask extends SinkTask {
           LOG.warn("Started workflow instance " + workflowInstanceEvent + " based on record " + record);
         } else {
           // back to normal behavior
-          MessageEvent messageEvent = zeebe.topicClient().workflowClient().newPublishMessageCommand() //
+          MessageEvent messageEvent = zeebe.workflowClient().newPublishMessageCommand() //
             .messageName(messageName) //
             .correlationKey(correlationKey) //
             .messageId(messageId) //

@@ -1,4 +1,4 @@
-package com.berndruecker.demo.kafka.connect.zeebe;
+package io.berndruecker.demo.kafka.connect.zeebe;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -54,7 +54,7 @@ public final class ZeebeSourceTask extends SourceTask {
     zeebe = ZeebeClient.newClient();
 
     // subscribe to Zeebe to collect new messages to be sent
-    subscription = zeebe.topicClient().jobClient().newWorker() //
+    subscription = zeebe.jobClient().newWorker() //
         .jobType("sendMessage") //
         .handler(new JobHandler() {
           public void handle(JobClient jobClient, JobEvent jobEvent) {

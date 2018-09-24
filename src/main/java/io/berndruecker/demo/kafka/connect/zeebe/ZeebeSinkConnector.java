@@ -1,4 +1,4 @@
-package com.berndruecker.demo.kafka.connect.zeebe;
+package io.berndruecker.demo.kafka.connect.zeebe;
 
 import java.net.URI;
 import java.net.URISyntaxException;

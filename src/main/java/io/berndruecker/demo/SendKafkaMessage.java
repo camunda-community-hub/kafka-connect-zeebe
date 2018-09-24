@@ -1,4 +1,4 @@
-package com.berndruecker.demo;
+package io.berndruecker.demo;
 
 import java.util.Properties;
 

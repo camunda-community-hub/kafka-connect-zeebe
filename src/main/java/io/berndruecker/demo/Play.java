@@ -1,4 +1,4 @@
-package com.berndruecker.demo;
+package io.berndruecker.demo;
 
 import io.zeebe.gateway.ZeebeClient;
 import io.zeebe.gateway.api.clients.JobClient;
@@ -10,13 +10,13 @@ public class Play {
   public static void main(String[] args) {
     ZeebeClient zeebe = ZeebeClient.newClient();
     
-    zeebe.topicClient().workflowClient().newDeployCommand()
+    zeebe.workflowClient().newDeployCommand()
       .addResourceFromClasspath("play.bpmn")
       .send().join();
     
     System.out.println("deployed");
     
-    zeebe.topicClient().workflowClient().newCreateInstanceCommand()
+    zeebe.workflowClient().newCreateInstanceCommand()
       .bpmnProcessId("play")
       .latestVersion()
       .payload("{\"orderId\": \"17\"}")
@@ -32,7 +32,7 @@ public class Play {
 //    
 //    System.out.println("sent message");
     
-    zeebe.topicClient().workflowClient().newCreateInstanceCommand()
+    zeebe.workflowClient().newCreateInstanceCommand()
       .bpmnProcessId("play")
       .latestVersion()
       .payload("{\"orderId\": \"17\"}")
@@ -40,7 +40,7 @@ public class Play {
 
   System.out.println("started again");
 
-    zeebe.topicClient().jobClient().newWorker()
+    zeebe.jobClient().newWorker()
       .jobType("sysout")
       .handler(new JobHandler() {
         

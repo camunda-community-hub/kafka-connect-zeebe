@@ -1,4 +1,4 @@
-package com.berndruecker.demo.kafka.connect.zeebe;
+package io.berndruecker.demo.kafka.connect.zeebe;
 
   import org.apache.kafka.connect.source.SourceConnector;
 import org.apache.kafka.connect.connector.Task;

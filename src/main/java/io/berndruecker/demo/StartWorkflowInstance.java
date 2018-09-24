@@ -1,4 +1,4 @@
-package com.berndruecker.demo;
+package io.berndruecker.demo;
 
 import io.zeebe.gateway.ZeebeClient;
 
@@ -7,7 +7,7 @@ public class StartWorkflowInstance {
   public static void main(String[] args) {
     ZeebeClient zeebe = ZeebeClient.newClient();
     
-    zeebe.topicClient().workflowClient().newCreateInstanceCommand()
+    zeebe.workflowClient().newCreateInstanceCommand()
       .bpmnProcessId("play")
       .latestVersion()
       .payload("{\"orderId\": \"18\"}")

@@ -1,4 +1,4 @@
-package com.berndruecker.demo;
+package io.berndruecker.demo;
 
 import io.zeebe.gateway.ZeebeClient;
 import io.zeebe.gateway.api.clients.JobClient;
@@ -10,7 +10,7 @@ public class SysoutWorker {
   public static void main(String[] args) {
     ZeebeClient zeebe = ZeebeClient.newClient();
     
-    zeebe.topicClient().jobClient().newWorker()
+    zeebe.jobClient().newWorker()
       .jobType("sysout")
       .handler(new JobHandler() {
         
