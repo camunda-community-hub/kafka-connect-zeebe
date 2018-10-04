@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.zeebe.gateway.ZeebeClient;
+import io.zeebe.gateway.ZeebeClientConfiguration;
 import io.zeebe.gateway.api.clients.JobClient;
 import io.zeebe.gateway.api.events.JobEvent;
 import io.zeebe.gateway.api.subscription.JobHandler;
@@ -30,7 +31,7 @@ public final class ZeebeSourceTask extends SourceTask {
   private URI redisAddress;
   private String nameListKey;
 
-  private URI zeebeBrokerAddress;
+  private String zeebeBrokerAddress;
   private String correlationKeyJsonPath;
   private String messageNameJsonPath;
 
@@ -42,16 +43,16 @@ public final class ZeebeSourceTask extends SourceTask {
   @Override
   public void start(final Map<String, String> props) {
 
-//    try {
-//      zeebeBrokerAddress = new URI(props.get(Constants.CONFIG_ZEEBE_BROKER_ADDRESS));
-//    } catch (URISyntaxException e) {
-//      throw new RuntimeException(e);
-//    }
+    zeebeBrokerAddress = props.get(Constants.CONFIG_ZEEBE_BROKER_ADDRESS);
 //
 //    correlationKeyJsonPath = props.get(Constants.CONFIG_CORRELATION_KEY_JSONPATH);
 //    messageNameJsonPath = props.get(Constants.CONFIG_MESSAGE_NAME_JSONPATH);
 
-    zeebe = ZeebeClient.newClient();
+    LOG.info("Connecting to Zeebe broker at '" + zeebeBrokerAddress + "'");
+    
+    zeebe = ZeebeClient.newClientBuilder()
+      .brokerContactPoint(zeebeBrokerAddress)
+      .build();    
 
     // subscribe to Zeebe to collect new messages to be sent
     subscription = zeebe.jobClient().newWorker() //
@@ -83,29 +84,17 @@ public final class ZeebeSourceTask extends SourceTask {
 
     }
 
-    // if (jedis.isConnected()) {
-    // try {
-    // final List<String> entry = jedis.blpop(Constants.REDIS_QUERY_TIMEOUT,
-    // nameListKey);
-    //
-    // final String name = entry.get(1);
-    //
-    // if (name != null) {
-    // final byte[] message = name.getBytes(Charset.forName("UTF-8"));
-    //
-    // }
-    // } catch (JedisConnectionException e) {
-    // LOG.warn("Socket closed during Redis query {}", e);
-    // }
-    // }
-
     return records;
   }
 
   @Override
   public void stop() {
-    subscription.close();
-    zeebe.close();
+    if (subscription!=null) {
+      subscription.close();
+    }
+    if (zeebe!=null) {      
+      zeebe.close();
+    }
   }
 
   @Override

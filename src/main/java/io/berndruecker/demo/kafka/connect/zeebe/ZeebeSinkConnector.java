@@ -15,7 +15,7 @@ import org.apache.kafka.connect.sink.SinkConnector;
 
 public final class ZeebeSinkConnector extends SinkConnector {
   
-  private URI zeebeBrokerAddress;
+  private String zeebeBrokerAddress;
   
   private String correlationKeyJsonPath;
   private String messageNameJsonPath;
@@ -55,12 +55,7 @@ public final class ZeebeSinkConnector extends SinkConnector {
 
   @Override
   public void start(final Map<String, String> props) {
-    try {
-      zeebeBrokerAddress = new URI(props.get(Constants.CONFIG_ZEEBE_BROKER_ADDRESS));
-    } catch (URISyntaxException e) {
-      throw new RuntimeException(e);
-    }
-
+    zeebeBrokerAddress = props.get(Constants.CONFIG_ZEEBE_BROKER_ADDRESS);
     correlationKeyJsonPath = props.get(Constants.CONFIG_CORRELATION_KEY_JSONPATH);
     messageNameJsonPath = props.get(Constants.CONFIG_MESSAGE_NAME_JSONPATH);
     startEventMapping = props.get(Constants.CONFIG_START_EVENT_MAPPING);

@@ -1,7 +1,5 @@
 package io.berndruecker.demo.kafka.connect.zeebe;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,13 +19,12 @@ import io.zeebe.gateway.ZeebeClient;
 import io.zeebe.gateway.api.events.MessageEvent;
 import io.zeebe.gateway.api.events.WorkflowInstanceEvent;
 import io.zeebe.gateway.cmd.ClientCommandRejectedException;
-import io.zeebe.gateway.cmd.ClientException;
 
 public final class ZeebeSinkTask extends SinkTask {
 
   private static final Logger LOG = LoggerFactory.getLogger(ZeebeSinkTask.class);
   
-  private URI zeebeBrokerAddress;
+  private String zeebeBrokerAddress;
   private String correlationKeyJsonPath;
   private String messageNameJsonPath;
   private Map<String, String> startEventMapping = new HashMap<>();
@@ -36,11 +33,7 @@ public final class ZeebeSinkTask extends SinkTask {
 
   @Override
   public void start(final Map<String, String> props) {
-    try {
-      zeebeBrokerAddress = new URI(props.get(Constants.CONFIG_ZEEBE_BROKER_ADDRESS));
-    } catch (URISyntaxException e) {
-      throw new RuntimeException(e);
-    }
+    zeebeBrokerAddress = props.get(Constants.CONFIG_ZEEBE_BROKER_ADDRESS);
 
     correlationKeyJsonPath = props.get(Constants.CONFIG_CORRELATION_KEY_JSONPATH);
     messageNameJsonPath = props.get(Constants.CONFIG_MESSAGE_NAME_JSONPATH);
@@ -52,7 +45,9 @@ public final class ZeebeSinkTask extends SinkTask {
       startEventMapping.put(startEventMappingEntries[0].trim(), startEventMappingEntries[1].trim());
     }
 
-    zeebe = ZeebeClient.newClient();
+    zeebe = ZeebeClient.newClientBuilder() //
+          .brokerContactPoint(zeebeBrokerAddress) //
+          .build();
   }
 
   @Override

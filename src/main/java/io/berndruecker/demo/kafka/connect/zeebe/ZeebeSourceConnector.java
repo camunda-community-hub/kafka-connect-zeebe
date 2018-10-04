@@ -21,7 +21,7 @@ import org.apache.kafka.connect.connector.Task;
     
     private String[] kafkaTopics;
     private int kafkaPartitions;
-    private URI zeebeBrokerAddress;
+    private String zeebeBrokerAddress;
     private String nameListKey;
 
     @Override
@@ -32,25 +32,13 @@ import org.apache.kafka.connect.connector.Task;
     @Override
     public ConfigDef config() {
       final ConfigDef configDef = new ConfigDef();
-//      configDef.define(Constants.CONFIG_KAFKA_PARTITIONS, Type.INT, Range.atLeast(0), Importance.LOW, "Number of available Kafka partitions");
-//      configDef.define(Constants.CONFIG_REDIS_ADDRESS, Type.STRING, "redis://localhost:6379", Importance.HIGH, "Redis address (redis://<host>:<port>)");
-//      configDef.define(Constants.CONFIG_NAME_LIST_KEY, Type.STRING, "names", Importance.HIGH, "Redis key for name list");
-
+      configDef.define(Constants.CONFIG_ZEEBE_BROKER_ADDRESS, Type.STRING, "localhost:26500", Importance.HIGH, "Zeebe broker address (<host>:<port>)");
       return configDef;
     }
 
     @Override
     public void start(final Map<String, String> props) {
-//      kafkaTopics = props.get(Constants.CONFIG_TOPICS).split(Constants.TOPIC_DELIMITER);
-//      kafkaPartitions = Integer.parseInt(props.get(Constants.CONFIG_KAFKA_PARTITIONS));
-//
-//      try {
-//        redisAddress = new URI(props.get(Constants.CONFIG_REDIS_ADDRESS));
-//      } catch (URISyntaxException e) {
-//        throw new RuntimeException(e);
-//      }
-//
-//      nameListKey = props.get(Constants.CONFIG_NAME_LIST_KEY);
+      zeebeBrokerAddress = props.get(Constants.CONFIG_ZEEBE_BROKER_ADDRESS);
     }
 
     @Override
@@ -62,10 +50,7 @@ import org.apache.kafka.connect.connector.Task;
 
       for (int i = 0; i < maxTasks; i++) {
         final Map<String, String> config = new HashMap<>();
-//        config.put(Constants.CONFIG_KAFKA_PARTITIONS, String.valueOf(kafkaPartitions));
-//        config.put(Constants.CONFIG_REDIS_ADDRESS, redisAddress.toString());
-//        config.put(Constants.CONFIG_NAME_LIST_KEY, nameListKey);
-
+        config.put(Constants.CONFIG_ZEEBE_BROKER_ADDRESS, zeebeBrokerAddress);
         configs.add(config);
       }
 
