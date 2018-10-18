@@ -1,9 +1,10 @@
 package io.berndruecker.demo;
 
-import io.zeebe.gateway.ZeebeClient;
-import io.zeebe.gateway.api.clients.JobClient;
-import io.zeebe.gateway.api.events.JobEvent;
-import io.zeebe.gateway.api.subscription.JobHandler;
+import io.zeebe.client.ZeebeClient;
+import io.zeebe.client.api.clients.JobClient;
+import io.zeebe.client.api.events.JobEvent;
+import io.zeebe.client.api.response.ActivatedJob;
+import io.zeebe.client.api.subscription.JobHandler;
 
 public class Play {
 
@@ -45,9 +46,11 @@ public class Play {
       .handler(new JobHandler() {
         
         @Override
-        public void handle(JobClient client, JobEvent evt) {
-          System.out.println(evt);    
-          client.newCompleteCommand(evt).send().join();          
+        public void handle(JobClient client, ActivatedJob job) {
+          System.out.println(job);    
+          client
+            .newCompleteCommand(job.getKey())
+            .send().join();                    
         }
       })
       .open();

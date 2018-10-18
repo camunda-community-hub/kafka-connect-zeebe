@@ -1,6 +1,6 @@
 package io.berndruecker.demo;
 
-import io.zeebe.gateway.ZeebeClient;
+import io.zeebe.client.ZeebeClient;
 
 public class StartWorkflowInstance {
 

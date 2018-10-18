@@ -1,9 +1,6 @@
 package io.berndruecker.demo;
 
-import io.zeebe.gateway.ZeebeClient;
-import io.zeebe.gateway.api.clients.JobClient;
-import io.zeebe.gateway.api.events.JobEvent;
-import io.zeebe.gateway.api.subscription.JobHandler;
+import io.zeebe.client.ZeebeClient;
 
 public class DeployWorkflowModel {
 
