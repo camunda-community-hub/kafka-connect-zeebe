@@ -6,8 +6,11 @@ import java.time.Duration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.apache.kafka.common.record.Record;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.kafka.connect.source.SourceTask;
@@ -36,7 +39,8 @@ public final class ZeebeSourceTask extends SourceTask {
   private ZeebeClient zeebe;
 
   private JobWorker subscription;
-  private ConcurrentLinkedQueue<ActivatedJob> collectedJobs = new ConcurrentLinkedQueue<>();
+  private Queue<ActivatedJob> collectedJobs = new ConcurrentLinkedQueue<>();
+  private Map<SourceRecord, Long> jobKeyForRecord = new ConcurrentHashMap<>();
   
   @Override
   public void start(final Map<String, String> props) {
@@ -55,13 +59,10 @@ public final class ZeebeSourceTask extends SourceTask {
         .handler(new JobHandler() {
           public void handle(JobClient jobClient, ActivatedJob jobEvent) {
             collectedJobs.add(jobEvent);
-            jobClient // 
-              .newCompleteCommand(jobEvent.getKey()) //
-              .send().join();
           }
         }) //
         .name("KafkaConnector") //
-        .timeout(Duration.ofSeconds(1)) //
+        .timeout(Duration.ofSeconds(5)) // lock it for 5 seconds - commit (see below) must be within that time frame
         .open();
     LOG.info("Subscribed to Zeebe at '" + zeebeBrokerAddress + "' for sending records");
   }
@@ -79,6 +80,8 @@ public final class ZeebeSourceTask extends SourceTask {
             // TODO: THink about if always the full payload should be transfered
             collectedJob.getPayload().getBytes(Charset.forName("UTF-8"))); 
         records.add(record);
+        // remember job key to complete it during commit
+        jobKeyForRecord.put(record, collectedJob.getKey());
         LOG.warn("Collected record to be sent to Kafka " + record);
       }
     }
@@ -86,6 +89,14 @@ public final class ZeebeSourceTask extends SourceTask {
     return records;
   }
 
+  @Override
+  public void commitRecord(SourceRecord record) throws InterruptedException {
+    Long jobKey = jobKeyForRecord.remove(record);
+    zeebe.jobClient() // 
+      .newCompleteCommand(jobKey) //
+      .send().join();
+  }
+  
   @Override
   public void stop() {
     if (subscription!=null) {
@@ -100,4 +111,5 @@ public final class ZeebeSourceTask extends SourceTask {
   public String version() {
     return Constants.VERSION;
   }
+
 }
