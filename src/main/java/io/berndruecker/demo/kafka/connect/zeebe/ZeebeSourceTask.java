@@ -82,7 +82,7 @@ public final class ZeebeSourceTask extends SourceTask {
         records.add(record);
         // remember job key to complete it during commit
         jobKeyForRecord.put(record, collectedJob.getKey());
-        LOG.warn("Collected record to be sent to Kafka " + record);
+        LOG.info("Collected record to be sent to Kafka " + record);
       }
     }
 

@@ -16,7 +16,7 @@ public class SysoutWorker {
         
         @Override
         public void handle(JobClient client, ActivatedJob job) {
-          System.out.println(job);    
+          System.out.println("Executing sysout for job " + job.getKey());    
           client.newCompleteCommand(job.getKey()).send().join();          
         }
       })

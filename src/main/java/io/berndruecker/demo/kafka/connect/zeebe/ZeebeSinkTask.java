@@ -74,7 +74,7 @@ public final class ZeebeSinkTask extends SinkTask {
                 .latestVersion() //
                 .payload(payload) //
                 .send().join();
-          LOG.warn("Started workflow instance " + workflowInstanceEvent + " based on record " + record);
+          LOG.info("Started workflow instance " + workflowInstanceEvent + " based on record " + record);
         } else {
           // back to normal behavior
           zeebe.workflowClient().newPublishMessageCommand() //
@@ -84,7 +84,7 @@ public final class ZeebeSinkTask extends SinkTask {
             .payload(payload) //
             .send().join();
         
-          LOG.warn("Send message to Zeebe based on record " + record);
+          LOG.info("Send message to Zeebe based on record " + record);
         }
       }
       catch (Exception ex) {
