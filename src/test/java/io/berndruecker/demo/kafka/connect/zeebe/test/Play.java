@@ -1,9 +1,9 @@
-package io.berndruecker.demo;
+package io.berndruecker.demo.kafka.connect.zeebe.test;
 
-import io.zeebe.gateway.ZeebeClient;
-import io.zeebe.gateway.api.clients.JobClient;
-import io.zeebe.gateway.api.events.JobEvent;
-import io.zeebe.gateway.api.subscription.JobHandler;
+import io.zeebe.client.ZeebeClient;
+import io.zeebe.client.api.clients.JobClient;
+import io.zeebe.client.api.response.ActivatedJob;
+import io.zeebe.client.api.subscription.JobHandler;
 
 public class Play {
 
@@ -11,18 +11,18 @@ public class Play {
     ZeebeClient zeebe = ZeebeClient.newClient();
     
     zeebe.workflowClient().newDeployCommand()
-      .addResourceFromClasspath("play.bpmn")
+      .addResourceFromClasspath("test-kafka-connect.bpmn")
       .send().join();
     
     System.out.println("deployed");
     
     zeebe.workflowClient().newCreateInstanceCommand()
-      .bpmnProcessId("play")
+      .bpmnProcessId("test-kafka-connect")
       .latestVersion()
       .payload("{\"orderId\": \"17\"}")
       .send().join();
 
-    System.out.println("started");
+    System.out.println("started workflow instance");
 
 //    zeebe.topicClient().workflowClient().newPublishMessageCommand()
 //      .messageName("OrderPaid")
@@ -33,7 +33,7 @@ public class Play {
 //    System.out.println("sent message");
     
     zeebe.workflowClient().newCreateInstanceCommand()
-      .bpmnProcessId("play")
+      .bpmnProcessId("test-kafka-connect")
       .latestVersion()
       .payload("{\"orderId\": \"17\"}")
       .send().join();
@@ -45,9 +45,9 @@ public class Play {
       .handler(new JobHandler() {
         
         @Override
-        public void handle(JobClient client, JobEvent evt) {
-          System.out.println(evt);    
-          client.newCompleteCommand(evt).send().join();          
+        public void handle(JobClient client, ActivatedJob job) {
+          System.out.println(job);    
+          client.newCompleteCommand(job.getKey()).send().join();          
         }
       })
       .open();

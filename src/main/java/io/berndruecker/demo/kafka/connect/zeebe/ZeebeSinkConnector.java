@@ -42,7 +42,7 @@ public final class ZeebeSinkConnector extends SinkConnector {
 
     for (int i = 0; i < maxTasks; i++) {
       final Map<String, String> config = new HashMap<>();
-      config.put(Constants.CONFIG_ZEEBE_BROKER_ADDRESS, zeebeBrokerAddress.toString());
+      config.put(Constants.CONFIG_ZEEBE_BROKER_ADDRESS, zeebeBrokerAddress);
       config.put(Constants.CONFIG_CORRELATION_KEY_JSONPATH, correlationKeyJsonPath);
       config.put(Constants.CONFIG_MESSAGE_NAME_JSONPATH, messageNameJsonPath);
       config.put(Constants.CONFIG_START_EVENT_MAPPING, startEventMapping);

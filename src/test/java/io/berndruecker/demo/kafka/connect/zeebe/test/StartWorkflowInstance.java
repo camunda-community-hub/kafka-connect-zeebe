@@ -1,6 +1,6 @@
-package io.berndruecker.demo;
+package io.berndruecker.demo.kafka.connect.zeebe.test;
 
-import io.zeebe.gateway.ZeebeClient;
+import io.zeebe.client.ZeebeClient;
 
 public class StartWorkflowInstance {
 
@@ -8,7 +8,7 @@ public class StartWorkflowInstance {
     ZeebeClient zeebe = ZeebeClient.newClient();
     
     zeebe.workflowClient().newCreateInstanceCommand()
-      .bpmnProcessId("play")
+      .bpmnProcessId("test-kafka-connect")
       .latestVersion()
       .payload("{\"orderId\": \"18\"}")
       .send().join();

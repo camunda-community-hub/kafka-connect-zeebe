@@ -1,7 +1,6 @@
 package io.berndruecker.demo.kafka.connect.zeebe;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.time.Duration;
 import java.util.LinkedList;
@@ -15,12 +14,11 @@ import org.apache.kafka.connect.source.SourceTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.zeebe.gateway.ZeebeClient;
-import io.zeebe.gateway.ZeebeClientConfiguration;
-import io.zeebe.gateway.api.clients.JobClient;
-import io.zeebe.gateway.api.events.JobEvent;
-import io.zeebe.gateway.api.subscription.JobHandler;
-import io.zeebe.gateway.api.subscription.JobWorker;
+import io.zeebe.client.ZeebeClient;
+import io.zeebe.client.api.clients.JobClient;
+import io.zeebe.client.api.response.ActivatedJob;
+import io.zeebe.client.api.subscription.JobHandler;
+import io.zeebe.client.api.subscription.JobWorker;
 
 public final class ZeebeSourceTask extends SourceTask {
 
@@ -38,15 +36,17 @@ public final class ZeebeSourceTask extends SourceTask {
   private ZeebeClient zeebe;
 
   private JobWorker subscription;
-  private ConcurrentLinkedQueue<JobEvent> collectedJobs = new ConcurrentLinkedQueue<>();
-
+  private ConcurrentLinkedQueue<CollectedJob> collectedJobs = new ConcurrentLinkedQueue<>();
+  
+  private static class CollectedJob {
+    public ActivatedJob job;
+//    public JobClient jobClient;
+  }
+  
   @Override
   public void start(final Map<String, String> props) {
 
     zeebeBrokerAddress = props.get(Constants.CONFIG_ZEEBE_BROKER_ADDRESS);
-//
-//    correlationKeyJsonPath = props.get(Constants.CONFIG_CORRELATION_KEY_JSONPATH);
-//    messageNameJsonPath = props.get(Constants.CONFIG_MESSAGE_NAME_JSONPATH);
 
     LOG.info("Connecting to Zeebe broker at '" + zeebeBrokerAddress + "'");
     
@@ -58,30 +58,35 @@ public final class ZeebeSourceTask extends SourceTask {
     subscription = zeebe.jobClient().newWorker() //
         .jobType("sendMessage") //
         .handler(new JobHandler() {
-          public void handle(JobClient jobClient, JobEvent jobEvent) {
-            collectedJobs.add(jobEvent);
+          public void handle(JobClient jobClient, ActivatedJob jobEvent) {
+            CollectedJob collectedJob = new CollectedJob();
+            collectedJob.job = jobEvent;
+            jobClient // 
+              .newCompleteCommand(collectedJob.job.getKey()) //
+              .send().join();
           }
         }) //
         .name("KafkaConnector") //
         .timeout(Duration.ofSeconds(1)) //
         .open();
+    LOG.info("Subscribed to Zeebe at '" + zeebeBrokerAddress + "' for sending records");
   }
 
   @Override
   public List<SourceRecord> poll() {
     final List<SourceRecord> records = new LinkedList<>();
 
-    JobEvent jobEvent = null;
-    while ((jobEvent = collectedJobs.poll()) != null) {
+    CollectedJob collectedJob = null;
+    while ((collectedJob = collectedJobs.poll()) != null) {
 
       for (String topic : kafkaTopics) {
         final SourceRecord record = new SourceRecord(null, null, topic, // ignore partitions for now random.nextInt(kafkaPartitions), 
             Schema.BYTES_SCHEMA, //
             // TODO: THink about if always the full payload should be transfered
-            jobEvent.getPayload().getBytes(Charset.forName("UTF-8"))); 
+            collectedJob.job.getPayload().getBytes(Charset.forName("UTF-8"))); 
         records.add(record);
+        LOG.warn("Collected record to be sent to Kafka " + record);
       }
-
     }
 
     return records;

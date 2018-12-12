@@ -1,9 +1,6 @@
-package io.berndruecker.demo;
+package io.berndruecker.demo.kafka.connect.zeebe.test;
 
-import io.zeebe.gateway.ZeebeClient;
-import io.zeebe.gateway.api.clients.JobClient;
-import io.zeebe.gateway.api.events.JobEvent;
-import io.zeebe.gateway.api.subscription.JobHandler;
+import io.zeebe.client.ZeebeClient;
 
 public class DeployWorkflowModel {
 
@@ -11,7 +8,7 @@ public class DeployWorkflowModel {
     ZeebeClient zeebe = ZeebeClient.newClient();
     
     zeebe.workflowClient().newDeployCommand()
-      .addResourceFromClasspath("play.bpmn")
+      .addResourceFromClasspath("test-kafka-connect.bpmn")
       .send().join();
     
     System.out.println("deployed");

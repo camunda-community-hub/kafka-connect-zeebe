@@ -15,10 +15,9 @@ import org.slf4j.LoggerFactory;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 
-import io.zeebe.gateway.ZeebeClient;
-import io.zeebe.gateway.api.events.MessageEvent;
-import io.zeebe.gateway.api.events.WorkflowInstanceEvent;
-import io.zeebe.gateway.cmd.ClientCommandRejectedException;
+import io.opencensus.trace.MessageEvent;
+import io.zeebe.client.ZeebeClient;
+import io.zeebe.client.api.events.WorkflowInstanceEvent;
 
 public final class ZeebeSinkTask extends SinkTask {
 
@@ -78,17 +77,17 @@ public final class ZeebeSinkTask extends SinkTask {
           LOG.warn("Started workflow instance " + workflowInstanceEvent + " based on record " + record);
         } else {
           // back to normal behavior
-          MessageEvent messageEvent = zeebe.workflowClient().newPublishMessageCommand() //
+          zeebe.workflowClient().newPublishMessageCommand() //
             .messageName(messageName) //
             .correlationKey(correlationKey) //
             .messageId(messageId) //
             .payload(payload) //
             .send().join();
         
-          LOG.warn("Send message " + messageEvent + " to Zeebe based on record " + record);
+          LOG.warn("Send message to Zeebe based on record " + record);
         }
       }
-      catch (ClientCommandRejectedException ex) {
+      catch (Exception ex) {
         // something could not be processed in Zeebe
         // Retry will not have any effect
         // so ignore it for the moment

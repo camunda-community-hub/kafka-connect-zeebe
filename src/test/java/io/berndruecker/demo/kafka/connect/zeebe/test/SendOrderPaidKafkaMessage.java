@@ -1,4 +1,4 @@
-package io.berndruecker.demo;
+package io.berndruecker.demo.kafka.connect.zeebe.test;
 
 import java.util.Properties;
 
@@ -7,7 +7,7 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
-public class SendKafkaMessage {
+public class SendOrderPaidKafkaMessage {
 
   public static void main(String[] argv) throws Exception {
     // Configure the Producer
