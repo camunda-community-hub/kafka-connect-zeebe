@@ -36,12 +36,7 @@ public final class ZeebeSourceTask extends SourceTask {
   private ZeebeClient zeebe;
 
   private JobWorker subscription;
-  private ConcurrentLinkedQueue<CollectedJob> collectedJobs = new ConcurrentLinkedQueue<>();
-  
-  private static class CollectedJob {
-    public ActivatedJob job;
-//    public JobClient jobClient;
-  }
+  private ConcurrentLinkedQueue<ActivatedJob> collectedJobs = new ConcurrentLinkedQueue<>();
   
   @Override
   public void start(final Map<String, String> props) {
@@ -59,10 +54,9 @@ public final class ZeebeSourceTask extends SourceTask {
         .jobType("sendMessage") //
         .handler(new JobHandler() {
           public void handle(JobClient jobClient, ActivatedJob jobEvent) {
-            CollectedJob collectedJob = new CollectedJob();
-            collectedJob.job = jobEvent;
+            collectedJobs.add(jobEvent);
             jobClient // 
-              .newCompleteCommand(collectedJob.job.getKey()) //
+              .newCompleteCommand(jobEvent.getKey()) //
               .send().join();
           }
         }) //
@@ -76,14 +70,14 @@ public final class ZeebeSourceTask extends SourceTask {
   public List<SourceRecord> poll() {
     final List<SourceRecord> records = new LinkedList<>();
 
-    CollectedJob collectedJob = null;
+    ActivatedJob collectedJob = null;
     while ((collectedJob = collectedJobs.poll()) != null) {
 
       for (String topic : kafkaTopics) {
         final SourceRecord record = new SourceRecord(null, null, topic, // ignore partitions for now random.nextInt(kafkaPartitions), 
             Schema.BYTES_SCHEMA, //
             // TODO: THink about if always the full payload should be transfered
-            collectedJob.job.getPayload().getBytes(Charset.forName("UTF-8"))); 
+            collectedJob.getPayload().getBytes(Charset.forName("UTF-8"))); 
         records.add(record);
         LOG.warn("Collected record to be sent to Kafka " + record);
       }
