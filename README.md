@@ -4,7 +4,7 @@
 
 **This is a prototype for a POC - it is not production ready!**
 
-See  https://blog.bernd-ruecker.com/writing-a-kafka-connector-for-zeebe-io-ef0ba00677c6 for details
+See this blog post for an introduction: https://zeebe.io/blog/2018/12/writing-an-apache-kafka-connector-for-zeebe/
 
 Features:
 * Correlate messages from a Kafka topic with Zeebe workflows. This uses the [Zeebe Message Correlation](https://docs.zeebe.io/reference/message-correlation.html) features. So for example if no matching workflow instance is found, the message is buffered for its time-to-live (TTL) and then discarded. You could simply ingest all messages from a Kafka topic and check if they correlate to something in Zeebe.
