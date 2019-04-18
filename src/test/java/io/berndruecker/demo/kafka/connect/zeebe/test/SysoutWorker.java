@@ -10,7 +10,7 @@ public class SysoutWorker {
   public static void main(String[] args) {
     ZeebeClient zeebe = ZeebeClient.newClient();
     
-    zeebe.jobClient().newWorker()
+    zeebe.newWorker()
       .jobType("sysout")
       .handler(new JobHandler() {
         

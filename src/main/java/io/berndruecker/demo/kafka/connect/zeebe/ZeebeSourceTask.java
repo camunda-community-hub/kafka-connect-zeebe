@@ -54,7 +54,7 @@ public final class ZeebeSourceTask extends SourceTask {
       .build();    
 
     // subscribe to Zeebe to collect new messages to be sent
-    subscription = zeebe.jobClient().newWorker() //
+    subscription = zeebe.newWorker() //
         .jobType("sendMessage") //
         .handler(new JobHandler() {
           public void handle(JobClient jobClient, ActivatedJob jobEvent) {
@@ -78,7 +78,7 @@ public final class ZeebeSourceTask extends SourceTask {
         final SourceRecord record = new SourceRecord(null, null, topic, // ignore partitions for now random.nextInt(kafkaPartitions), 
             Schema.BYTES_SCHEMA, //
             // TODO: THink about if always the full payload should be transfered
-            collectedJob.getPayload().getBytes(Charset.forName("UTF-8"))); 
+            collectedJob.getVariables().getBytes(Charset.forName("UTF-8"))); 
         records.add(record);
         // remember job key to complete it during commit
         jobKeyForRecord.put(record, collectedJob.getKey());
@@ -92,8 +92,7 @@ public final class ZeebeSourceTask extends SourceTask {
   @Override
   public void commitRecord(SourceRecord record) throws InterruptedException {
     Long jobKey = jobKeyForRecord.remove(record);
-    zeebe.jobClient() // 
-      .newCompleteCommand(jobKey) //
+    zeebe.newCompleteCommand(jobKey) //
       .send().join();
   }
   

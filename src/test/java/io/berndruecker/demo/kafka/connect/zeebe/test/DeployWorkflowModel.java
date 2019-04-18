@@ -7,7 +7,7 @@ public class DeployWorkflowModel {
   public static void main(String[] args) {
     ZeebeClient zeebe = ZeebeClient.newClient();
     
-    zeebe.workflowClient().newDeployCommand()
+    zeebe.newDeployCommand()
       .addResourceFromClasspath("test-kafka-connect.bpmn")
       .send().join();
     

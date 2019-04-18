@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.berndruecker.demo</groupId>
@@ -12,7 +13,7 @@
 		<dependency>
 			<groupId>io.zeebe</groupId>
 			<artifactId>zeebe-client-java</artifactId>
-			<version>0.14.0</version>
+			<version>0.17.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.kafka</groupId>
@@ -21,35 +22,29 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-		    <groupId>com.jayway.jsonpath</groupId>
-		    <artifactId>json-path</artifactId>
-		    <version>2.3.0</version>
-		</dependency>		
+			<groupId>com.jayway.jsonpath</groupId>
+			<artifactId>json-path</artifactId>
+			<version>2.3.0</version>
+		</dependency>
 	</dependencies>
-	<repositories>
-		<repository>
-			<id>zeebe-snap</id>
-			<url>https://app.camunda.com/nexus/content/repositories/zeebe-io-snapshots/</url>
-		</repository>
-	</repositories>
 	<build>
-	<plugins>
-           <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>2.4.1</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <createDependencyReducedPom>false</createDependencyReducedPom>
-                </configuration>
-</plugin>	
-	</plugins>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>2.4.1</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<createDependencyReducedPom>false</createDependencyReducedPom>
+				</configuration>
+			</plugin>
+		</plugins>
 	</build>
 </project>

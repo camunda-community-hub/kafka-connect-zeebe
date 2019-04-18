@@ -69,19 +69,19 @@ public final class ZeebeSinkTask extends SinkTask {
         if (startEventMapping.containsKey(messageName)) {
           String workflowDefinitionName = startEventMapping.get(messageName);
           WorkflowInstanceEvent workflowInstanceEvent = //
-              zeebe.workflowClient().newCreateInstanceCommand() //
+              zeebe.newCreateInstanceCommand() //
                 .bpmnProcessId(workflowDefinitionName) //
                 .latestVersion() //
-                .payload(payload) //
+                .variables(payload) //
                 .send().join();
           LOG.info("Started workflow instance " + workflowInstanceEvent + " based on record " + record);
         } else {
           // back to normal behavior
-          zeebe.workflowClient().newPublishMessageCommand() //
+          zeebe.newPublishMessageCommand() //
             .messageName(messageName) //
             .correlationKey(correlationKey) //
             .messageId(messageId) //
-            .payload(payload) //
+            .variables(payload) //
             .send().join();
         
           LOG.info("Send message to Zeebe based on record " + record);

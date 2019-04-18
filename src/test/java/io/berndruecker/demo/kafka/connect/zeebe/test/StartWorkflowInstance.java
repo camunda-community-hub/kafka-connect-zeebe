@@ -7,10 +7,10 @@ public class StartWorkflowInstance {
   public static void main(String[] args) {
     ZeebeClient zeebe = ZeebeClient.newClient();
     
-    zeebe.workflowClient().newCreateInstanceCommand()
+    zeebe.newCreateInstanceCommand()
       .bpmnProcessId("test-kafka-connect")
       .latestVersion()
-      .payload("{\"orderId\": \"18\"}")
+      .variables("{\"orderId\": \"18\"}")
       .send().join();
 
     System.out.println("started");
