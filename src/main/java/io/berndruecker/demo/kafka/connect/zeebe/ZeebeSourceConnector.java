@@ -1,28 +1,20 @@
 package io.berndruecker.demo.kafka.connect.zeebe;
 
-  import org.apache.kafka.connect.source.SourceConnector;
-import org.apache.kafka.connect.connector.Task;
-  import org.apache.kafka.common.config.ConfigDef;
-  import org.apache.kafka.common.config.ConfigDef.Type;
-  import org.apache.kafka.common.config.ConfigDef.Range;
-  import org.apache.kafka.common.config.ConfigDef.Importance;
-
-  import java.util.List;
-  import java.util.LinkedList;
-  import java.util.Map;
   import java.util.HashMap;
-  import java.net.URI;
-  import java.net.URISyntaxException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
-  /**
-   * Manages NameTask's
-   */
-  public final class ZeebeSourceConnector extends SourceConnector {
+import org.apache.kafka.common.config.ConfigDef;
+import org.apache.kafka.common.config.ConfigDef.Importance;
+import org.apache.kafka.common.config.ConfigDef.Type;
+import org.apache.kafka.connect.connector.Task;
+import org.apache.kafka.connect.source.SourceConnector;
+
+public final class ZeebeSourceConnector extends SourceConnector {
     
-    private String[] kafkaTopics;
-    private int kafkaPartitions;
+    private String kafkaTopics;
     private String zeebeBrokerAddress;
-    private String nameListKey;
 
     @Override
     public Class<? extends Task> taskClass() {
@@ -32,13 +24,15 @@ import org.apache.kafka.connect.connector.Task;
     @Override
     public ConfigDef config() {
       final ConfigDef configDef = new ConfigDef();
-      configDef.define(Constants.CONFIG_ZEEBE_BROKER_ADDRESS, Type.STRING, "localhost:26500", Importance.HIGH, "Zeebe broker address (<host>:<port>)");
+      configDef.define(Constants.CONFIG_ZEEBE_BROKER_ADDRESS, Type.STRING, "localhost:26500", Importance.HIGH, "Zeebe address (<host>:<port>)");
+      configDef.define(Constants.CONFIG_KAFKA_TOPIC_NAMES, Type.STRING, "", Importance.HIGH, "Topic name(s) the message should be sent to");
       return configDef;
     }
 
     @Override
     public void start(final Map<String, String> props) {
       zeebeBrokerAddress = props.get(Constants.CONFIG_ZEEBE_BROKER_ADDRESS);
+      kafkaTopics = props.get(Constants.CONFIG_KAFKA_TOPIC_NAMES);
     }
 
     @Override
@@ -51,6 +45,7 @@ import org.apache.kafka.connect.connector.Task;
       for (int i = 0; i < maxTasks; i++) {
         final Map<String, String> config = new HashMap<>();
         config.put(Constants.CONFIG_ZEEBE_BROKER_ADDRESS, zeebeBrokerAddress);
+        config.put(Constants.CONFIG_KAFKA_TOPIC_NAMES, kafkaTopics);
         configs.add(config);
       }
 

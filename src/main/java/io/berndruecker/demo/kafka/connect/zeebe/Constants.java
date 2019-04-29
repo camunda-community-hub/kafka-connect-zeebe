@@ -8,5 +8,6 @@ public class Constants {
   public static final String CONFIG_CORRELATION_KEY_JSONPATH = "correlationJsonPath";
   public static final String CONFIG_MESSAGE_NAME_JSONPATH = "messageNameJsonPath";
   public static final String CONFIG_START_EVENT_MAPPING = "startEventMapping";
+  public static final String CONFIG_KAFKA_TOPIC_NAMES = "topics";
 
 }

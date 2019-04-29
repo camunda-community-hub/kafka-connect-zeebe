@@ -1,6 +1,5 @@
 package io.berndruecker.demo.kafka.connect.zeebe;
 
-import java.net.URI;
 import java.nio.charset.Charset;
 import java.time.Duration;
 import java.util.LinkedList;
@@ -10,7 +9,6 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.apache.kafka.common.record.Record;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.kafka.connect.source.SourceTask;
@@ -28,13 +26,8 @@ public final class ZeebeSourceTask extends SourceTask {
   private static final Logger LOG = LoggerFactory.getLogger(ZeebeSourceTask.class);
 
   private String[] kafkaTopics;
-  private int kafkaPartitions;
-  private URI redisAddress;
-  private String nameListKey;
 
   private String zeebeBrokerAddress;
-  private String correlationKeyJsonPath;
-  private String messageNameJsonPath;
 
   private ZeebeClient zeebe;
 
@@ -46,6 +39,7 @@ public final class ZeebeSourceTask extends SourceTask {
   public void start(final Map<String, String> props) {
 
     zeebeBrokerAddress = props.get(Constants.CONFIG_ZEEBE_BROKER_ADDRESS);
+    kafkaTopics = props.get(Constants.CONFIG_KAFKA_TOPIC_NAMES).split(",");
 
     LOG.info("Connecting to Zeebe broker at '" + zeebeBrokerAddress + "'");
     
