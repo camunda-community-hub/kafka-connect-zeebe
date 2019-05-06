@@ -33,8 +33,8 @@ public final class ZeebeSinkTask extends SinkTask {
   public void start(final Map<String, String> props) {
     zeebeBrokerAddress = props.get(Constants.CONFIG_ZEEBE_BROKER_ADDRESS);
 
-    correlationKeyJsonPath = props.get(Constants.CONFIG_CORRELATION_KEY_VARIABLE);
-    messageNameJsonPath = props.get(Constants.CONFIG_MESSAGE_NAME_VARIABLE);
+    correlationKeyJsonPath = props.get(Constants.CONFIG_CORRELATION_KEY_JSONPATH);
+    messageNameJsonPath = props.get(Constants.CONFIG_MESSAGE_NAME_JSONPATH);
     
     // Read from format "messageName1:process1,messageName2:process2"
     StringTokenizer startEventMappingTokenizer = new StringTokenizer(props.get(Constants.CONFIG_START_EVENT_MAPPING), ",");
