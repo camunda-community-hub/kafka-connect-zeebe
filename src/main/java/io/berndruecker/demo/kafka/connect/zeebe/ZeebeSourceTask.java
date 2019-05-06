@@ -68,7 +68,7 @@ public final class ZeebeSourceTask extends SourceTask {
                               .split(","));
               Map<String, Object> variables = jobEvent.getVariablesAsMap();
               variables.forEach((k,v) -> {
-                if (variablesThatShouldBeSent.indexOf(k) != -1) {variablesToSend.put(k, v); }
+                if (variablesThatShouldBeSent.indexOf(k) != -1) variablesToSend.put(k, v);
               });
               jobRecord.variables = JSONValue.toJSONString(variablesToSend);
             } else {
