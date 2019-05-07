@@ -65,7 +65,7 @@ public final class ZeebeSourceTask extends SourceTask {
 
               List<String> variablesThatShouldBeSent = Arrays.asList(
                       headers.get(variablesToSendToKafka).toString()
-                              .split(","));
+                              .trim().split("\\s*,\\s*"));
               Map<String, Object> variables = jobEvent.getVariablesAsMap();
               variables.forEach((k,v) -> {
                 if (variablesThatShouldBeSent.indexOf(k) != -1) variablesToSend.put(k, v);
