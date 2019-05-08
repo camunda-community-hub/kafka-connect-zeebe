@@ -1,7 +1,5 @@
 package io.berndruecker.demo.kafka.connect.zeebe;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;

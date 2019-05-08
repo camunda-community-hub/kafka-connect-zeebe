@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 
-import io.opencensus.trace.MessageEvent;
 import io.zeebe.client.ZeebeClient;
 import io.zeebe.client.api.events.WorkflowInstanceEvent;
 

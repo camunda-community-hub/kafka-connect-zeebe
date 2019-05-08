@@ -2,13 +2,11 @@ package io.berndruecker.demo.kafka.connect.zeebe;
 
 import java.nio.charset.Charset;
 import java.time.Duration;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import net.minidev.json.JSONValue;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.kafka.connect.source.SourceTask;
@@ -21,6 +19,11 @@ import io.zeebe.client.api.response.ActivatedJob;
 import io.zeebe.client.api.subscription.JobHandler;
 import io.zeebe.client.api.subscription.JobWorker;
 
+final class JobRecord {
+  Long jobKey;
+  String variables;
+}
+
 public final class ZeebeSourceTask extends SourceTask {
 
   private static final Logger LOG = LoggerFactory.getLogger(ZeebeSourceTask.class);
@@ -32,7 +35,7 @@ public final class ZeebeSourceTask extends SourceTask {
   private ZeebeClient zeebe;
 
   private JobWorker subscription;
-  private Queue<ActivatedJob> collectedJobs = new ConcurrentLinkedQueue<>();
+  private Queue<JobRecord> collectedJobs = new ConcurrentLinkedQueue<>();
   private Map<SourceRecord, Long> jobKeyForRecord = new ConcurrentHashMap<>();
   
   @Override
@@ -52,7 +55,27 @@ public final class ZeebeSourceTask extends SourceTask {
         .jobType("sendMessage") //
         .handler(new JobHandler() {
           public void handle(JobClient jobClient, ActivatedJob jobEvent) {
-            collectedJobs.add(jobEvent);
+            JobRecord jobRecord = new JobRecord();
+
+            final String variablesToSendToKafka = "variablesToSendToKafka";
+            Map<String, Object> headers = jobEvent.getCustomHeaders();
+
+            if (headers.containsKey(variablesToSendToKafka)) {
+              final Map<String, Object> variablesToSend = new HashMap<>();
+
+              List<String> variablesThatShouldBeSent = Arrays.asList(
+                      headers.get(variablesToSendToKafka).toString()
+                              .trim().split("\\s*,\\s*"));
+              Map<String, Object> variables = jobEvent.getVariablesAsMap();
+              variables.forEach((k,v) -> {
+                if (variablesThatShouldBeSent.indexOf(k) != -1) variablesToSend.put(k, v);
+              });
+              jobRecord.variables = JSONValue.toJSONString(variablesToSend);
+            } else {
+              jobRecord.variables = jobEvent.getVariables();
+            }
+            jobRecord.jobKey = jobEvent.getKey();
+            collectedJobs.add(jobRecord);
           }
         }) //
         .name("KafkaConnector") //
@@ -65,17 +88,18 @@ public final class ZeebeSourceTask extends SourceTask {
   public List<SourceRecord> poll() {
     final List<SourceRecord> records = new LinkedList<>();
 
-    ActivatedJob collectedJob = null;
+    JobRecord collectedJob = null;
     while ((collectedJob = collectedJobs.poll()) != null) {
 
       for (String topic : kafkaTopics) {
+        byte[] variables = collectedJob.variables.getBytes(Charset.forName("UTF-8"));
         final SourceRecord record = new SourceRecord(null, null, topic, // ignore partitions for now random.nextInt(kafkaPartitions), 
-            Schema.BYTES_SCHEMA, //
-            // TODO: THink about if always the full payload should be transfered
-            collectedJob.getVariables().getBytes(Charset.forName("UTF-8"))); 
+            Schema.BYTES_SCHEMA,
+            variables
+        );
         records.add(record);
         // remember job key to complete it during commit
-        jobKeyForRecord.put(record, collectedJob.getKey());
+        jobKeyForRecord.put(record, collectedJob.jobKey);
         LOG.info("Collected record to be sent to Kafka " + record);
       }
     }

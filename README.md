@@ -56,3 +56,13 @@ topics=flowing-retail
 In a workflow you can then add a Service Task with the task type "sendMessage" which will create a record on the Kafka topic configured:
 
 ![Overview](bpmn2.png)
+
+## Filtering Variables
+
+You can filter the variables being sent to Kafka by adding a custom header to the "sendMessage" task with the key "variablesToSendToKafka".
+
+Set the value of this key to a comma-separated list of variables to pass to Kafka.
+
+If this custom header is not present, then all variables in the scope will be sent to Kafka by default.
+
+![Filter Variables](variables-custom-header.png)
