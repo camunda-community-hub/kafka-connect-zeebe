@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_10l1fhd" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Zeebe Modeler" exporterVersion="0.6.2">
-  <bpmn:process id="ping-pong" isExecutable="true">
+  <bpmn:process id="auto-ping-pong" name="Auto Ping Pong" isExecutable="true">
     <bpmn:startEvent id="StartEvent_1" name="Wants to ping">
       <bpmn:outgoing>SequenceFlow_01s5lf9</bpmn:outgoing>
     </bpmn:startEvent>
@@ -8,7 +8,7 @@
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="kafka" />
         <zeebe:taskHeaders>
-          <zeebe:header key="kafka-topic" value="zeebe-pong" />
+          <zeebe:header key="topic" value="auto-pong" />
         </zeebe:taskHeaders>
       </bpmn:extensionElements>
       <bpmn:incoming>SequenceFlow_01s5lf9</bpmn:incoming>
@@ -32,7 +32,7 @@
     </bpmn:extensionElements>
   </bpmn:message>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="ping-pong">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="auto-ping-pong">
       <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
         <dc:Bounds x="179" y="103" width="36" height="36" />
         <bpmndi:BPMNLabel>

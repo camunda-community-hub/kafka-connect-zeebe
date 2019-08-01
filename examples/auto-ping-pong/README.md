@@ -1,40 +1,15 @@
-# Ping Pong
+# Auto Ping Pong
 
-This example showcases how jobs are consumed by Kafka (e.g. `ping`), and how records can be published
-to Zeebe in order to `pong`, using the following [process](blob/master/examples/auto-ping-pong/process.bpmn)
+This example showcases automatic workflow completion with just connectors, using
+the following [process](blob/master/examples/auto-ping-pong/process.bpmn)
 
 ![Process](process.png)
 
-The difference with the [Auto Ping Pong](blob/master/examples/auto-ping-pong) example is that here
-we need to interact with Kafka in order to complete it; this also allows us to monitor the state of
-both systems, through Operate and Control Center.
-
-Once a workflow instance is started, the process will wait at the service task.
-
-The job created by service task is consumed by the source connector, which produces a record
-on the `ping` topic. The record will contain the variables of the job, including 
-the correlation key for the intermediate message catch event. Using `kafkacat` in consumer
-mode, or using Control Center, you can then visualize the records currently published to this topic.
-
-Once completed, the process will then move to the intermediate catch event; in order to proceed further,
-it will require a record to be published on the `pong` Kafka topic. When that record is published,
-it will then complete the workflow instance.
-
-Records published on the `pong` topic should have the following format:
-
-```json
-{
-  "name": "pong", 
-  "variables": { 
-    "foo": 1
-  },
-  "key": 1, 
-  "ttl": 10000
-}
-```
-
-This is so the JSON path configured in the sink connector can properly construct our Zeebe message. Note
-that the key here obviously should be updated to correlate to the correct message.
+The first service task is consumed by the source connector, which produces a record
+on the `auto-pong` topic. The record will contain the variables of the job, including 
+the correlation key for the intermediate message catch event. This record is then consumed
+by the sink connector which will publish a message with the correlation key based on the job
+which will then complete the workflow.
 
 ## Running the example
 
@@ -48,7 +23,6 @@ To run the example you need the following tools on your system:
 1. [docker-compose](https://docs.docker.com/compose/)
 1. [zbctl](https://github.com/zeebe-io/zeebe/releases) (part of Zeebe, you can download it from the latest release)
 1. [maven](https://maven.apache.org/) (to build the project)
-1. [kafkacat](https://github.com/edenhill/kafkacat) (allows you to consume and produce records)
 
 The [Zeebe Modeler](https://github.com/zeebe-io/zeebe-modeler/releases) is a nice addition to see 
 process as well.
@@ -73,14 +47,8 @@ Once everything is up and running, you can start the example by running:
 make deploy-workflow create-source-connector create-sink-connector
 ```
 
-This will deploy the process and create the source and sink connectors.
-
-Running `make ping` will  then create a series of instances which you can track. After this, you can
-now check Operate and Control Center to monitor the state of your instances/connectors.
-
-Once the instances awaiting messages, in order to complete the cycle we need to produce some records.
-You can do so by running `make id=1 pong`, which will complete instance with correlation key 1. To 
-complete all instances created by the ping command you can simply run `for {1..10}; do make id="$i" pong; done`.
+This will deploy the process and create the source and sink connectors. Running `make ping` will 
+then create a series of instances which you can track.
 
 ### Manually
 
@@ -104,9 +72,6 @@ steps manually:
    `curl -X POST -H "Content-Type: application/json" --data @source.json http://localhost:8083`
 1. Create a workflow instance:
    `zbctl create instance --insecure --variables "{\"name\": \"pong\", \"payload\": { \"foo\": 1 }, \"key\": 1 }" ping-pong`
-1. You can now check Operate and Control Center in order to see the state of the instance.
-1. Once the process is awaiting a message, you can run the following to complete it:
-   `echo "{\"name\": \"pong\", \"variables\": { \"foo\": 1 }, \"key\": 1, \"ttl\": 10000 }" | kafkacat -b localhost:9092 -t pong -T -P`
 
 If you create many instances, a good way to differentiate them is incrementing the `1`s in the above command,
 which is what the `Makefile` does.

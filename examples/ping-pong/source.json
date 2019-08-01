@@ -13,7 +13,7 @@
     "zeebe.client.worker.maxJobsActive": "100",
     "zeebe.client.job.pollinterval": "2000",
     "zeebe.client.job.timeout": "5000",
-    "job.types": "kafka",
-    "job.header.topics": "kafka-topic"
+    "job.types": "ping",
+    "job.header.topics": "topic"
   }
 }

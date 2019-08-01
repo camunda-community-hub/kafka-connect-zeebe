@@ -7,12 +7,12 @@
     "key.converter.schemas.enable": false,
     "value.converter": "org.apache.kafka.connect.json.JsonConverter",
     "value.converter.schemas.enable": false,
-    "topics": "pong",
+    "topics": "auto-pong",
     "zeebe.client.broker.contactPoint": "zeebe:26500",
     "zeebe.client.requestTimeout": "10000",
-    "message.path.messageName": "$.name",
-    "message.path.correlationKey": "$.key",
-    "message.path.variables": "$.variables",
-    "message.path.timeToLive": "$.ttl"
+    "message.path.messageName": "$.variablesAsMap.name",
+    "message.path.correlationKey": "$.variablesAsMap.key",
+    "message.path.variables": "$.variablesAsMap.payload",
+    "message.path.timeToLive": "$.variablesAsMap.ttl"
   }
 }
