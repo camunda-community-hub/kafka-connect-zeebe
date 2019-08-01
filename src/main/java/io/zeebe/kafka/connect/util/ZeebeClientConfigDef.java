@@ -1,0 +1,63 @@
+/*
+ * Copyright © 2019 camunda services GmbH (info@camunda.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package io.zeebe.kafka.connect.util;
+
+import io.zeebe.client.ClientProperties;
+import org.apache.kafka.common.config.ConfigDef;
+import org.apache.kafka.common.config.ConfigDef.Importance;
+import org.apache.kafka.common.config.ConfigDef.Type;
+import org.apache.kafka.common.config.ConfigDef.Width;
+
+public final class ZeebeClientConfigDef {
+  public static final String BROKER_CONTACTPOINT_CONFIG = ClientProperties.BROKER_CONTACTPOINT;
+  public static final String REQUEST_TIMEOUT_CONFIG = ClientProperties.DEFAULT_REQUEST_TIMEOUT;
+
+  private static final String CLIENT_CONFIG_GROUP = "Zeebe Client";
+  private static final String BROKER_CONTACTPOINT_DEFAULT = "localhost:26500";
+  private static final String BROKER_CONTACTPOINT_DOC =
+      "Broker contact point, e.g. ``localhost:26500``, for the Zeebe client";
+  private static final long REQUEST_TIMEOUT_DEFAULT = 10_000;
+  private static final String REQUEST_TIMEOUT_DOC =
+      "How long to wait before a request to the broker is timed out";
+
+  private ZeebeClientConfigDef() {}
+
+  public static void defineClientGroup(final ConfigDef definitions) {
+    int order = 0;
+
+    definitions
+        .define(
+            BROKER_CONTACTPOINT_CONFIG,
+            Type.STRING,
+            BROKER_CONTACTPOINT_DEFAULT,
+            Importance.HIGH,
+            BROKER_CONTACTPOINT_DOC,
+            CLIENT_CONFIG_GROUP,
+            ++order,
+            Width.SHORT,
+            "Broker contact point")
+        .define(
+            REQUEST_TIMEOUT_CONFIG,
+            Type.LONG,
+            REQUEST_TIMEOUT_DEFAULT,
+            Importance.LOW,
+            REQUEST_TIMEOUT_DOC,
+            CLIENT_CONFIG_GROUP,
+            ++order,
+            Width.SHORT,
+            "Request timeout");
+  }
+}

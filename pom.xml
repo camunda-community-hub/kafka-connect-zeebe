@@ -1,50 +1,412 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.berndruecker.demo</groupId>
-	<artifactId>kafka-connect-zeebe</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<properties>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
-	</properties>
-	<dependencies>
-		<dependency>
-			<groupId>io.zeebe</groupId>
-			<artifactId>zeebe-client-java</artifactId>
-			<version>0.17.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.kafka</groupId>
-			<artifactId>connect-api</artifactId>
-			<version>1.0.0</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.jayway.jsonpath</groupId>
-			<artifactId>json-path</artifactId>
-			<version>2.3.0</version>
-		</dependency>
-	</dependencies>
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<version>2.4.1</version>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<createDependencyReducedPom>false</createDependencyReducedPom>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+  <name>Kafka Connect Zeebe</name>
+  <artifactId>kafka-connect-zeebe</artifactId>
+  <groupId>io.zeebe</groupId>
+  <packaging>jar</packaging>
+  <version>1.0.0-SNAPSHOT</version>
+  <inceptionYear>2019</inceptionYear>
+  <url>https://github.com/zeebe-io/kafka-connect-zeebe</url>
+
+  <parent>
+    <groupId>org.camunda</groupId>
+    <artifactId>camunda-release-parent</artifactId>
+    <version>2.5</version>
+    <!-- do not remove empty tag - http://jira.codehaus.org/browse/MNG-4687 -->
+    <relativePath/>
+  </parent>
+
+  <properties>
+    <!-- release parent settings -->
+    <version.java>1.8</version.java>
+    <nexus.snapshot.repository>
+      https://app.camunda.com/nexus/content/repositories/zeebe-io-snapshots/
+    </nexus.snapshot.repository>
+    <nexus.release.repository>https://app.camunda.com/nexus/content/repositories/zeebe-io/
+    </nexus.release.repository>
+
+    <!-- disable jdk8 javadoc checks on release build -->
+    <additionalparam>-Xdoclint:none</additionalparam>
+
+    <!-- license header -->
+    <license.header>com/mycila/maven/plugin/license/templates/APACHE-2.txt</license.header>
+
+    <!-- project dependencies -->
+    <version.assertj>3.12.2</version.assertj>
+    <version.junit>4.12</version.junit>
+    <version.kafka>2.3.0</version.kafka>
+    <version.jsonpath>2.4.0</version.jsonpath>
+    <version.log4j>2.12.0</version.log4j>
+    <version.mockito>3.0.0</version.mockito>
+    <version.slf4j>1.7.26</version.slf4j>
+    <version.zeebe>0.20.0</version.zeebe>
+
+    <!-- plugin version -->
+    <plugin.version.assembly>3.1.1</plugin.version.assembly>
+    <plugin.version.checkstyle>3.0.0</plugin.version.checkstyle>
+    <plugin.version.enforcer>3.0.0-M2</plugin.version.enforcer>
+    <plugin.version.failsafe>2.22.1</plugin.version.failsafe>
+    <plugin.version.fmt>2.6.0</plugin.version.fmt>
+    <plugin.version.kafka.connect>0.11.2</plugin.version.kafka.connect>
+    <plugin.version.license>3.0</plugin.version.license>
+    <plugin.version.surefire>2.22.1</plugin.version.surefire>
+
+    <!-- maven extensions -->
+    <extension.version.os-maven-plugin>1.6.1</extension.version.os-maven-plugin>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.zeebe</groupId>
+        <artifactId>zeebe-bom</artifactId>
+        <version>${version.zeebe}</version>
+        <scope>import</scope>
+        <type>pom</type>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.zeebe</groupId>
+      <artifactId>zeebe-client-java</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>connect-api</artifactId>
+      <version>${version.kafka}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>connect-json</artifactId>
+      <version>${version.kafka}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.zeebe</groupId>
+      <artifactId>zeebe-protocol</artifactId>
+      <version>${version.zeebe}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.jayway.jsonpath</groupId>
+      <artifactId>json-path</artifactId>
+      <version>${version.jsonpath}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${version.slf4j}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
+      <version>${version.log4j}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>${version.log4j}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${version.junit}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>${version.assertj}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${version.mockito}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- LICENSE PLUGIN -->
+      <plugin>
+        <groupId>com.mycila</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <version>${plugin.version.license}</version>
+        <configuration>
+          <header>${license.header}</header>
+          <properties>
+            <owner>camunda services GmbH</owner>
+            <email>info@camunda.com</email>
+          </properties>
+          <includes>
+            <include>**/*.java</include>
+          </includes>
+          <mapping>
+            <java>SLASHSTAR_STYLE</java>
+          </mapping>
+        </configuration>
+        <executions>
+          <execution>
+            <id>add-license</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>format</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- CHECKSTYLE -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>${plugin.version.checkstyle}</version>
+        <!-- dependency on build tool to reference the checkstyle cfg -->
+        <dependencies>
+          <dependency>
+            <groupId>io.zeebe</groupId>
+            <artifactId>zeebe-build-tools</artifactId>
+            <version>${version.zeebe}</version>
+          </dependency>
+        </dependencies>
+        <configuration>
+          <configLocation>check/.checkstyle.xml</configLocation>
+          <includeTestSourceDirectory>true</includeTestSourceDirectory>
+          <encoding>UTF-8</encoding>
+          <failOnViolation>true</failOnViolation>
+          <sourceDirectories>
+            <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+            <sourceDirectory>${project.build.testSourceDirectory}</sourceDirectory>
+          </sourceDirectories>
+        </configuration>
+        <executions>
+          <execution>
+            <id>validate-java</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <configuration>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- unit tests -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${plugin.version.surefire}</version>
+        <configuration>
+          <failIfNoTests>false</failIfNoTests>
+          <trimStackTrace>false</trimStackTrace>
+          <redirectTestOutputToFile>true</redirectTestOutputToFile>
+        </configuration>
+      </plugin>
+
+      <!-- Google code format plugin -->
+      <plugin>
+        <groupId>com.coveo</groupId>
+        <artifactId>fmt-maven-plugin</artifactId>
+        <version>${plugin.version.fmt}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>format</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <additionalSourceDirectories>
+            <additionalSourceDirectory>${project.basedir}/src/test/jmh</additionalSourceDirectory>
+          </additionalSourceDirectories>
+        </configuration>
+      </plugin>
+
+      <!-- Assembly -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>${plugin.version.assembly}</version>
+        <configuration>
+          <descriptors>
+            <descriptor>src/assembly/development.xml</descriptor>
+            <descriptor>src/assembly/package.xml</descriptor>
+          </descriptors>
+        </configuration>
+        <executions>
+          <execution>
+            <id>make-assembly</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Kafka Connect Packaging Plugin -->
+      <plugin>
+        <groupId>io.confluent</groupId>
+        <version>${plugin.version.kafka.connect}</version>
+        <artifactId>kafka-connect-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>kafka-connect</goal>
+            </goals>
+            <configuration>
+              <title>Kafka Connect Zeebe</title>
+              <documentationUrl>https://github.com/zeebe-io/kafka-connect-zeebe/</documentationUrl>
+              <description>Write description</description>
+              <logo>logos/zeebe.png</logo>
+
+              <supportProviderName>Camunda Services GmbH</supportProviderName>
+              <supportSummary>Camunda supports the Zeebe source and sink connectors as a community project.</supportSummary>
+              <supportUrl>https://github.com/zeebe-io/kafka-connect-zeebe/</supportUrl>
+              <supportLogo>logos/camunda.jpg</supportLogo>
+
+              <ownerUsername>zeebe-io</ownerUsername>
+              <ownerType>organization</ownerType>
+              <ownerName>Camunda Services GmbH</ownerName>
+              <ownerUrl>https://zeebe.io/</ownerUrl>
+              <ownerLogo>logos/zeebe.png</ownerLogo>
+
+              <!-- TODO later
+              <dockerNamespace>camunda</dockerNamespace>
+              <dockerName>cp-kafka-connect</dockerName>
+              <dockerTag>${project.version}</dockerTag>
+              -->
+
+              <componentTypes>
+                <componentType>sink</componentType>
+                <componentType>source</componentType>
+              </componentTypes>
+
+              <tags>
+                <tag>Zeebe</tag>
+                <tag>zeebe</tag>
+                <tag>camunda</tag>
+                <tag>Camunda</tag>
+                <tag>workflows</tag>
+                <tag>orchestration</tag>
+              </tags>
+
+              <requirements>
+                <requirement>Zeebe ${version.zeebe}</requirement>
+              </requirements>
+
+              <deliveryGuarantee>
+                <deliveryGuarantee>exactlyOnce</deliveryGuarantee>
+              </deliveryGuarantee>
+
+              <confluentControlCenterIntegration>true</confluentControlCenterIntegration>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>standalone</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <configuration>
+              <descriptors>
+                <descriptor>src/assembly/standalone.xml</descriptor>
+              </descriptors>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>release</id>
+      <properties>
+        <plugin.version.gpg>1.6</plugin.version.gpg>
+        <gpg.passphrase>${env.GPG_PASS}</gpg.passphrase>
+        <resume>false</resume>
+        <tag>${env.RELEASE_VERSION}</tag>
+        <releaseVersion>${env.RELEASE_VERSION}</releaseVersion>
+        <developmentVersion>${env.DEVELOPMENT_VERSION}</developmentVersion>
+        <arguments>-s .ci/settings.xml -DskipTests</arguments>
+      </properties>
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-gpg-plugin</artifactId>
+              <configuration>
+                <gpgArguments>
+                  <arg>--pinentry-mode</arg>
+                  <arg>loopback</arg>
+                </gpgArguments>
+              </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
+  </profiles>
+
+  <repositories>
+    <repository>
+      <id>zeebe</id>
+      <name>Zeebe Repository</name>
+      <url>https://app.camunda.com/nexus/content/repositories/zeebe-io/</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+
+    <repository>
+      <id>zeebe-snapshots</id>
+      <name>Zeebe Snapshot Repository</name>
+      <url>https://app.camunda.com/nexus/content/repositories/zeebe-io-snapshots/</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
+  <scm>
+    <url>https://github.com/zeebe-io/kafka-connect-zeebe</url>
+    <connection>scm:git:git@github.com:zeebe-io/kafka-connect-zeebe.git</connection>
+    <developerConnection>scm:git:git@github.com:zeebe-io/kafka-connect-zeebe.git
+    </developerConnection>
+    <tag>HEAD</tag>
+  </scm>
 </project>
+
