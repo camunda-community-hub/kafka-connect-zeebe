@@ -59,7 +59,8 @@ public class ZeebeSourceConnector extends SourceConnector {
   /** {@inheritDoc} */
   @Override
   public List<Map<String, String>> taskConfigs(final int maxTasks) {
-    return ConnectorUtils.groupPartitions(jobTypes, maxTasks).stream()
+    return ConnectorUtils.groupPartitions(jobTypes, maxTasks)
+        .stream()
         .map(this::transformTask)
         .collect(Collectors.toList());
   }

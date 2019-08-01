@@ -71,7 +71,8 @@ public class ZeebeSinkTask extends SinkTask {
   @Override
   public void put(final Collection<SinkRecord> sinkRecords) {
     final CompletableFuture[] pendingRequests =
-        sinkRecords.stream()
+        sinkRecords
+            .stream()
             .map(this::prepareRequest)
             .map(FinalCommandStep::send)
             .toArray(CompletableFuture[]::new);
