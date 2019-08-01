@@ -21,18 +21,33 @@ Features:
 
 ## Sink (Kafka => Zeebe)
 
-The sink will forward all records on a Kafka topic to Zeebe (see [sample-sink.properties](blob/master/src/test/resources/zeebe-test-sink.properties)):
+The sink will forward all records on a Kafka topic to Zeebe (see [quickstart-zeebe-sink.properties](blob/master/config/quickstart-zeebe-sink.properties)):
 
 ```
-name=ZeebeSinkConnector
-connector.class=...ZeebeSinkConnector
+name=zeebe-sink
+connector.class=io.zeebe.kafka.connect.ZeebeSinkConnector
+tasks.max=1
+topics=zeebe
 
-correlationJsonPath=$.orderId
-messageNameJsonPath=$.eventType
+# Set default converters to be JSON with no schemas; this allows standard consumers to use a simple
+# JsonDeserializer to quickly inspect published jobs.
+# You should modify this to your preferred converter config to use schemas properly.
+key.converter=org.apache.kafka.connect.json.JsonConverter
+key.converter.schemas.enable=false
 
-zeebeBrokerAddress=localhost:26500
+value.converter=org.apache.kafka.connect.json.JsonConverter
+value.converter.schemas.enable=false
 
-topics=flowing-retail
+# Connector specific settings
+zeebe.client.broker.contactPoint=localhost:26500
+zeebe.client.requestTimeout=10000
+
+message.path.correlationKey=$.correlationKey
+message.path.messageName=$.messageName
+
+# Optional settings
+# message.path.timeToLive=$.timeToLive
+# message.path.variables=$.variables
 ...
 ```
 
@@ -42,15 +57,31 @@ In a workflow model you can wait for certain events by name (extracted from the 
 
 ## Source (Zeebe => Kafka)
 
-The source can send records to Kafka if a workflow instance flows through a certain activity ([sample-source.properties](blob/master/src/test/resources/zeebe-test-source.properties)):
+The source can send records to Kafka if a workflow instance flows through a certain activity ([quickstart-zeebe-source.properties](blob/master/config/quickstart-zeebe-source.properties)):
 
 ```
-name=ZeebeSourceConnector
+name=zeebe-source
+connector.class=io.zeebe.kafka.connect.ZeebeSourceConnector
+tasks.max=1
 
-connector.class=...ZeebeSourceConnector
-zeebeBrokerAddress=localhost:26500
+# Set default converters to be JSON with no schemas; this allows standard consumers to use a simple
+# JsonDeserializer to quickly inspect published jobs.
+# You should modify this to your preferred converter config to use schemas properly.
+key.converter=org.apache.kafka.connect.json.JsonConverter
+key.converter.schemas.enable=false
 
-topics=flowing-retail
+value.converter=org.apache.kafka.connect.json.JsonConverter
+value.converter.schemas.enable=false
+
+# Connector specific settings
+zeebe.client.broker.contactPoint=localhost:26500
+zeebe.client.worker.maxJobsActive=100
+zeebe.client.job.worker=kafka-connector
+zeebe.client.job.timeout=5000
+zeebe.client.requestTimeout=10000
+
+job.types=kafka
+job.header.topics=kafka-topic
 ```
 
 In a workflow you can then add a Service Task with the task type "sendMessage" which will create a record on the Kafka topic configured:
@@ -59,7 +90,7 @@ In a workflow you can then add a Service Task with the task type "sendMessage" w
 
 ## Filtering Variables
 
-You can filter the variables being sent to Kafka by adding a custom header to the "sendMessage" task with the key "variablesToSendToKafka".
+You can filter the variables being sent to Kafka by adding a custom header to the "sendMessage" task with the configuration option "job.variables".
 
 Set the value of this key to a comma-separated list of variables to pass to Kafka.
 

@@ -31,7 +31,7 @@ docker-wait-connect:
 
 .PHONY: docker-stop
 docker-stop:
-	docker-compose -f $(DOCKER_DIR)/docker-compose.yml down
+	docker-compose -f $(DOCKER_DIR)/docker-compose.yml down -v
 
 .PHONY: clean
 clean: docker-stop

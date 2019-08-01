@@ -37,12 +37,8 @@
     <license.header>com/mycila/maven/plugin/license/templates/APACHE-2.txt</license.header>
 
     <!-- project dependencies -->
-    <version.assertj>3.12.2</version.assertj>
-    <version.junit>4.12</version.junit>
     <version.kafka>2.3.0</version.kafka>
     <version.jsonpath>2.4.0</version.jsonpath>
-    <version.log4j>2.12.0</version.log4j>
-    <version.mockito>3.0.0</version.mockito>
     <version.slf4j>1.7.26</version.slf4j>
     <version.zeebe>0.20.0</version.zeebe>
 
@@ -79,21 +75,8 @@
     </dependency>
 
     <dependency>
-      <groupId>org.apache.kafka</groupId>
-      <artifactId>connect-api</artifactId>
-      <version>${version.kafka}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.kafka</groupId>
-      <artifactId>connect-json</artifactId>
-      <version>${version.kafka}</version>
-    </dependency>
-
-    <dependency>
       <groupId>io.zeebe</groupId>
       <artifactId>zeebe-protocol</artifactId>
-      <version>${version.zeebe}</version>
     </dependency>
 
     <dependency>
@@ -103,45 +86,24 @@
     </dependency>
 
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <version>${version.slf4j}</version>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>connect-api</artifactId>
+      <version>${version.kafka}</version>
       <scope>provided</scope>
     </dependency>
 
     <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-slf4j-impl</artifactId>
-      <version>${version.log4j}</version>
-      <scope>test</scope>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>connect-json</artifactId>
+      <version>${version.kafka}</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-core</artifactId>
-      <version>${version.log4j}</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>${version.junit}</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.assertj</groupId>
-      <artifactId>assertj-core</artifactId>
-      <version>${version.assertj}</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <version>${version.mockito}</version>
-      <scope>test</scope>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${version.slf4j}</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 
@@ -248,12 +210,6 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
         <version>${plugin.version.assembly}</version>
-        <configuration>
-          <descriptors>
-            <descriptor>src/assembly/development.xml</descriptor>
-            <descriptor>src/assembly/package.xml</descriptor>
-          </descriptors>
-        </configuration>
         <executions>
           <execution>
             <id>make-assembly</id>
@@ -261,6 +217,26 @@
             <goals>
               <goal>single</goal>
             </goals>
+            <configuration>
+              <descriptors>
+                <descriptor>src/assembly/development.xml</descriptor>
+                <descriptor>src/assembly/package.xml</descriptor>
+              </descriptors>
+            </configuration>
+          </execution>
+          <execution>
+            <id>make-assembly-uber</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <descriptorRefs>
+                <descriptorRef>jar-with-dependencies</descriptorRef>
+              </descriptorRefs>
+              <finalName>${project.artifactId}-${project.version}-uber</finalName>
+              <appendAssemblyId>false</appendAssemblyId>
+            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -283,9 +259,11 @@
               <logo>logos/zeebe.png</logo>
 
               <supportProviderName>Camunda Services GmbH</supportProviderName>
-              <supportSummary>Camunda supports the Zeebe source and sink connectors as a community project.</supportSummary>
+              <supportSummary>Camunda supports the Zeebe source and sink connectors as a community
+                project.
+              </supportSummary>
               <supportUrl>https://github.com/zeebe-io/kafka-connect-zeebe/</supportUrl>
-              <supportLogo>logos/camunda.jpg</supportLogo>
+              <supportLogo>logos/camunda.png</supportLogo>
 
               <ownerUsername>zeebe-io</ownerUsername>
               <ownerType>organization</ownerType>
