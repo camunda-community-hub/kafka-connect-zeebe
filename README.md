@@ -16,7 +16,7 @@ Features:
 
 * Build via mvn package
 * Put the resulting UBER jar into KAFKA_HOME/plugins
-* Run Kafka Connect using the Connector pointing to the property files listed below: connect-standalone connect-standalone.properties zeebe-sink.properties zeebe-source.properties
+* Run Kafka Connect using the Connector pointing to the property files listed below: connect-standalone connect-standalone.properties quickstart-zeebe-sink.properties quickstart-zeebe-source.properties
 
 
 ## Sink (Kafka => Zeebe)
@@ -97,3 +97,22 @@ Set the value of this key to a comma-separated list of variables to pass to Kafk
 If this custom header is not present, then all variables in the scope will be sent to Kafka by default.
 
 ![Filter Variables](variables-custom-header.png)
+
+## Docker
+
+The quickest way to get a feel for how this connector works (or to test it during development) is to use the provided [docker/docker-compose.yml](blob/master/docker/docker-compose.yml) file.
+
+After building the project and running `docker-compose up` in the `docker/` folder, or a simple `make build docker` from the project root, the following services will be started:
+
+1. Zeebe broker (ports: 26500 for communication, 9600 for monitoring)
+1. Operate (port: 8080)
+1. Elasticsearch (port: 9200) (required by Operate)
+1. Kafka (port: 9092)
+1. Zookeeper (port: 2181) (required by Kafka)
+1. Confluent Schema Registry (port: 8081)
+1. Confluent Kafka Connect (port: 8083)
+1. Confluent Control Center (port: 9021)
+
+You can use Operate (e.g. [localhost:8080](http://localhost:8080) to monitor workflows, and use Control Center e.g. [localhost:9021](http://localhost:9021) to monitor Kafka, create connectors, etc.
+
+Running `make monitor` once all services are up and running will open the respective pages. 

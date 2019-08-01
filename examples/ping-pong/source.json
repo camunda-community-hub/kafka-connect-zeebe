@@ -3,8 +3,10 @@
   "config": {
     "connector.class": "io.zeebe.kafka.connect.ZeebeSourceConnector",
     "tasks.max": "1",
-    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
-    "value.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "key.converter.schemas.enable": false,
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter.schemas.enable": false,
     "zeebe.client.broker.contactPoint": "zeebe:26500",
     "zeebe.client.requestTimeout": "10000",
     "zeebe.client.job.worker": "kafka-connector",

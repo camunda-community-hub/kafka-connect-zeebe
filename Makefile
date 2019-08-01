@@ -45,10 +45,8 @@ monitor:
 .PHONY: ping-pong
 ping-pong: docker docker-wait-zeebe docker-wait-connect
 	zbctl deploy --insecure $(EXAMPLES_DIR)/ping-pong/ping-pong.bpmn && \
-	curl -X POST -H "Content-Type: application/json" --data @$(EXAMPLES_DIR)/ping-pong/source.json \
-		http://localhost:8083/connectors && \
-	curl -X POST -H "Content-Type: application/json" --data @$(EXAMPLES_DIR)/ping-pong/sink.json \
-	  http://localhost:8083/connectors && \
+	curl -X POST -H "Content-Type: application/json" --data @$(EXAMPLES_DIR)/ping-pong/source.json http://localhost:8083/connectors && \
+	curl -X POST -H "Content-Type: application/json" --data @$(EXAMPLES_DIR)/ping-pong/sink.json http://localhost:8083/connectors && \
 	for i in {1..10}; do \
 		zbctl create instance --insecure \
 			--variables "{\"name\": \"pong\", \"payload\": { \"foo\": $$i }, \"key\": $$i }" ping-pong;	\
