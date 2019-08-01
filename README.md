@@ -20,6 +20,13 @@ Features:
 
 # Quickstart
 
+**TBD**
+
+# Examples
+
+You can find a series of examples [here](blob/master/examples) which should highlight how to use the
+connectors.
+
 ## Docker
 
 The quickest way to get a feel for how this connector works (or to test it during development) is to use the provided [docker/docker-compose.yml](blob/master/docker/docker-compose.yml) file.
