@@ -17,7 +17,6 @@ package io.zeebe.kafka.connect;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -32,15 +31,28 @@ import org.apache.kafka.connect.json.JsonDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DebugConsumer {
+/**
+ * Consumes all records from a given topic (or topics if given a regex pattern); expects records to
+ * be valid JSON (both key and value). Prints out every record consumed, always restarts from the
+ * earliest offset possible.
+ */
+public final class LoggerConsumer implements Runnable {
   public static void main(String[] args) {
-    new DebugConsumer().run();
+    new LoggerConsumer().run();
   }
 
-  private void run() {
-    final Logger logger = LoggerFactory.getLogger(this.getClass());
+  private final Logger logger;
+
+  private LoggerConsumer() {
+    this.logger = LoggerFactory.getLogger(this.getClass());
+  }
+
+  @Override
+  public void run() {
     try (final Consumer<JsonNode, JsonNode> consumer = buildConsumer()) {
-      consumer.subscribe(Pattern.compile("zeebe*"));
+      final String topics = getConfigParam("consumer.topics", "zeebe*");
+      consumer.subscribe(Pattern.compile(topics));
+
       while (true) {
         for (ConsumerRecord<JsonNode, JsonNode> record : consumer.poll(Duration.ofSeconds(5))) {
           if (record.key() != null && record.value() != null) {
@@ -53,28 +65,41 @@ public class DebugConsumer {
 
   private Consumer<JsonNode, JsonNode> buildConsumer() {
     final Map<String, Object> config = new HashMap<>();
-    final String servers =
-        System.getProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-    config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, Arrays.asList(servers.split(",")));
 
+    setConfig(config, ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
     // having a UUID as the default group ID allows us to restart from the beginning on each run
-    config.put(
-        ConsumerConfig.GROUP_ID_CONFIG,
-        System.getProperty(ConsumerConfig.GROUP_ID_CONFIG, UUID.randomUUID().toString()));
-    config.put(ConsumerConfig.CLIENT_ID_CONFIG, this.getClass().getName());
-    config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-
-    config.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, true);
-    config.put(ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG, 100);
-    config.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, 10000);
-    config.put(ConsumerConfig.METADATA_MAX_AGE_CONFIG, 1000);
+    setConfig(config, ConsumerConfig.GROUP_ID_CONFIG, UUID.randomUUID().toString());
+    setConfig(config, ConsumerConfig.CLIENT_ID_CONFIG, this.getClass().getName());
+    setConfig(config, ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+    setConfig(config, ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
+    setConfig(config, ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG, "100");
+    setConfig(config, ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, "10000");
+    setConfig(config, ConsumerConfig.METADATA_MAX_AGE_CONFIG, "1000");
 
     return new KafkaConsumer<>(
-        config, new ErrorHandlingDeserializer(), new ErrorHandlingDeserializer());
+        config, new ErrorHandlingDeserializer(logger), new ErrorHandlingDeserializer(logger));
+  }
+
+  private void setConfig(final Map<String, Object> config, String key, String fallback) {
+    config.put(key, getConfigParam(key, fallback));
+  }
+
+  private String getConfigParam(final String key, String fallback) {
+    return System.getProperty(key, fallback);
   }
 
   private static class ErrorHandlingDeserializer implements Deserializer<JsonNode> {
     private final Deserializer<JsonNode> internal = new JsonDeserializer();
+    private final Logger logger;
+
+    ErrorHandlingDeserializer(Logger logger) {
+      this.logger = logger;
+    }
+
+    @Override
+    public void configure(Map<String, ?> configs, boolean isKey) {
+      internal.configure(configs, isKey);
+    }
 
     @Override
     public JsonNode deserialize(String topic, byte[] data) {
@@ -82,6 +107,7 @@ public class DebugConsumer {
         return internal.deserialize(topic, data);
       } catch (SerializationException e) {
         // ignore
+        logger.warn("Failed to deserialize a record on topic {}", topic, e);
         return null;
       }
     }
