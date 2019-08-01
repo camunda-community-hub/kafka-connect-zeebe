@@ -24,12 +24,12 @@ Features:
 
 # Examples
 
-You can find a series of examples [here](blob/master/examples) which should highlight how to use the
+You can find a series of examples [here](examples) which should highlight how to use the
 connectors.
 
 ## Docker
 
-The quickest way to get a feel for how this connector works (or to test it during development) is to use the provided [docker/docker-compose.yml](blob/master/docker/docker-compose.yml) file.
+The quickest way to get a feel for how this connector works (or to test it during development) is to use the provided [docker/docker-compose.yml](docker/docker-compose.yml) file.
 
 After building the project and running `docker-compose up` in the `docker/` folder, or a simple `make build docker` from the project root, the following services will be started:
 
@@ -82,7 +82,7 @@ record. These paths are all configurable per connector.
 - `message.path.timeToLive`: JSONPath query to use to extract the time to live from the record; defaults to `$.timeToLive`
 - `message.path.variables`: JSONPath query to use to extract the variables from the record; defaults to `$.variables`
 
-You can find sample properties for the sink connector [here](blob/master/config/quickstart-zeebe-sink.properties).
+You can find sample properties for the sink connector [here](config/quickstart-zeebe-sink.properties).
 
 ## Source
 
@@ -112,7 +112,7 @@ In order to communicate with Zeebe, the connector has to create a Zeebe client, 
 - `job.types`: a comma-separated list of job types that should be consumed by the connector; defaults to `kafka`
 - `job.header.topics`: the [custom service task header](https://docs.zeebe.io/bpmn-workflows/service-tasks.html#task-headers) which specifies to which topics the message should be published to; defaults to `kafka-topic`
 
-You can find sample properties for the source connector [here](blob/master/config/quickstart-zeebe-source.properties).
+You can find sample properties for the source connector [here](config/quickstart-zeebe-source.properties).
 
 ### Filtering Variables
 

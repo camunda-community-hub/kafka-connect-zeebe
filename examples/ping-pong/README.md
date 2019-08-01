@@ -1,7 +1,7 @@
 # Ping Pong
 
 This example showcases how jobs are consumed by Kafka (e.g. `ping`), and how records can be published
-to Zeebe in order to `pong`, using the following [process](blob/master/examples/auto-ping-pong/process.bpmn)
+to Zeebe in order to `pong`, using the following [process](auto-ping-pong/process.bpmn)
 
 ![Process](process.png)
 

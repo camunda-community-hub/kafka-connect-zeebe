@@ -1,7 +1,7 @@
 # Auto Ping Pong
 
 This example showcases automatic workflow completion with just connectors, using
-the following [process](blob/master/examples/auto-ping-pong/process.bpmn)
+the following [process](process.bpmn)
 
 ![Process](process.png)
 
