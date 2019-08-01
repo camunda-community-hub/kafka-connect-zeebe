@@ -85,7 +85,7 @@ public class ZeebeSinkTask extends SinkTask {
       throw new ConnectException(e);
     }
 
-    LOGGER.debug("Published {} messages", sinkRecords.size());
+    LOGGER.trace("Published {} messages", sinkRecords.size());
   }
 
   @Override

@@ -95,7 +95,7 @@ public class ZeebeSourceTask extends SourceTask {
       }
 
       // the poll API expects null when no data is available
-      LOGGER.debug("Polled {} jobs", records.size());
+      LOGGER.trace("Polled {} jobs", records.size());
       return records.isEmpty() ? null : records;
     }
 
