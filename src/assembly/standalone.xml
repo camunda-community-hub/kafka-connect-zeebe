@@ -17,6 +17,7 @@
         <include>README*</include>
         <include>LICENSE*</include>
         <include>CODE_OF_CONDUCT*</include>
+        <include>licenses/</include>
       </includes>
     </fileSet>
   </fileSets>
