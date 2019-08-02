@@ -1,5 +1,5 @@
 {
-  "name": "zeebe-source",
+  "name": "auto-ping-pong-source",
   "config": {
     "connector.class": "io.zeebe.kafka.connect.ZeebeSourceConnector",
     "tasks.max": "1",

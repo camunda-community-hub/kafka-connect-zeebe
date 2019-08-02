@@ -21,9 +21,11 @@ import io.zeebe.client.api.worker.JobClient;
 import io.zeebe.client.api.worker.JobHandler;
 import io.zeebe.client.api.worker.JobWorker;
 import io.zeebe.kafka.connect.source.ZeebeSourceConnectorConfig;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,10 +40,6 @@ import org.slf4j.LoggerFactory;
  * ZeebeSourceConnectorConfig.JOB_TYPES_CONFIG}
  */
 public final class LoggerWorker implements Runnable, JobHandler {
-  public static void main(String[] args) {
-    new LoggerWorker().run();
-  }
-
   private final ZeebeClient client;
   private final List<JobWorker> workers;
   private final Logger logger;
@@ -52,15 +50,21 @@ public final class LoggerWorker implements Runnable, JobHandler {
     workers = new ArrayList<>();
   }
 
+  public static void main(String[] args) {
+    new LoggerWorker().run();
+  }
+
   @Override
   public void run() {
-    while (true) {
-      try {
-        workers.addAll(buildWorkers());
-      } finally {
-        workers.forEach(JobWorker::close);
-        client.close();
-      }
+    final CountDownLatch latch = new CountDownLatch(1);
+    try {
+      workers.addAll(buildWorkers());
+      latch.await();
+    } catch (InterruptedException ignored) {
+      // will exit promptly
+    } finally {
+      workers.forEach(JobWorker::close);
+      client.close();
     }
   }
 
@@ -71,7 +75,10 @@ public final class LoggerWorker implements Runnable, JobHandler {
   }
 
   private ZeebeClient buildClient() {
-    return ZeebeClient.newClientBuilder().withProperties(System.getProperties()).build();
+    return ZeebeClient.newClientBuilder()
+        .withProperties(System.getProperties())
+        .numJobWorkerExecutionThreads(1)
+        .build();
   }
 
   private List<JobWorker> buildWorkers() {
@@ -82,6 +89,11 @@ public final class LoggerWorker implements Runnable, JobHandler {
   }
 
   private JobWorker buildWorker(String jobType) {
-    return client.newWorker().jobType(jobType).handler(this).open();
+    return client
+        .newWorker()
+        .jobType(jobType)
+        .handler(this)
+        .pollInterval(Duration.ofSeconds(1))
+        .open();
   }
 }

@@ -10,7 +10,7 @@ Features:
 * Correlate messages from a Kafka topic with Zeebe workflows.
 * Send messages from a workflow in Zeebe to a Kafka topic.
 
-![Overview](overview.png)
+![Overview](doc/images/overview.png)
 
 # Installation
 
@@ -56,7 +56,7 @@ The source connector activates Zeebe jobs, publishes them as Kafka records, and 
 
 In a workflow model you can wait for certain events by name (extracted from the payload by messageNameJsonPath):
 
-![Overview](bpmn1.png)
+![Overview](doc/images/sink-example.png)
  
 The sink connector consumes Kafka records and publishes messages constructed from those records to Zeebe.
 This uses the [Zeebe Message Correlation](https://docs.zeebe.io/reference/message-correlation.html) features.
@@ -91,7 +91,7 @@ this BPMN feature; what we can do to allow communication with external systems t
 
 In a workflow you can then add a [ServiceTask](https://docs.zeebe.io/bpmn-workflows/service-tasks.html) with a configurable task type which will create a record on the configured Kafka topic:
 
-![Overview](bpmn2.png)
+![Overview](doc/images/source-example.png)
 
 Under the hood, the connector will create one [job worker](https://docs.zeebe.io/basics/job-workers.html) per configured task type, consume their jobs, and publish records
 to Kafka based on those. As we do not yet support schemas, the record values are a JSON representation of the job itself, and the record keys are the job key.
@@ -122,4 +122,4 @@ Set the value of this key to a comma-separated list of variables to pass to Kafk
 
 If this custom header is not present, then all variables in the scope will be sent to Kafka by default.
 
-![Filter Variables](variables-custom-header.png)
+![Filter Variables](doc/images/variables-custom-header.png)

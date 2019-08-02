@@ -6,7 +6,7 @@
     </bpmn:startEvent>
     <bpmn:serviceTask id="ServiceTask_1sx6rbe" name="To Kafka">
       <bpmn:extensionElements>
-        <zeebe:taskDefinition type="kafka" />
+        <zeebe:taskDefinition type="ping" />
         <zeebe:taskHeaders>
           <zeebe:header key="topic" value="ping" />
         </zeebe:taskHeaders>

@@ -9,7 +9,7 @@
 
   <Loggers>
     <Logger level="warn" name="org.apache"/>
-    <Logger level="warn" name="kafka"/>
+    <Logger level="warn" name="io.zeebe.client"/>
 
     <Root level="info">
       <AppenderRef ref="Console"/>

@@ -15,12 +15,12 @@
  */
 package io.zeebe.kafka.connect.sink;
 
-import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.PathNotFoundException;
 import io.zeebe.client.ZeebeClient;
 import io.zeebe.client.api.command.FinalCommandStep;
 import io.zeebe.client.api.command.PublishMessageCommandStep1.PublishMessageCommandStep3;
+import io.zeebe.kafka.connect.sink.message.JsonRecordParser;
+import io.zeebe.kafka.connect.sink.message.JsonRecordParser.Builder;
+import io.zeebe.kafka.connect.sink.message.Message;
 import io.zeebe.kafka.connect.util.VersionInfo;
 import io.zeebe.kafka.connect.util.ZeebeClientConfigDef;
 import java.time.Duration;
@@ -38,32 +38,13 @@ public class ZeebeSinkTask extends SinkTask {
   private static final Logger LOGGER = LoggerFactory.getLogger(ZeebeSinkTask.class);
 
   private ZeebeClient client;
-
-  private JsonPath messageKeyConfig;
-  private JsonPath messageNameConfig;
-  private JsonPath messageTtlConfig;
-  private JsonPath messageVariablesConfig;
+  private JsonRecordParser parser;
 
   @Override
   public void start(final Map<String, String> props) {
     final ZeebeSinkConnectorConfig config = new ZeebeSinkConnectorConfig(props);
     client = buildClient(config);
-
-    messageKeyConfig =
-        JsonPath.compile(config.getString(ZeebeSinkConnectorConfig.MESSAGE_PATH_KEY_CONFIG));
-    messageNameConfig =
-        JsonPath.compile(config.getString(ZeebeSinkConnectorConfig.MESSAGE_PATH_NAME_CONFIG));
-
-    final String ttlJsonPath = config.getString(ZeebeSinkConnectorConfig.MESSAGE_PATH_TTL_CONFIG);
-    if (ttlJsonPath != null && !ttlJsonPath.isEmpty()) {
-      messageTtlConfig = JsonPath.compile(ttlJsonPath);
-    }
-
-    final String variablesJsonPath =
-        config.getString(ZeebeSinkConnectorConfig.MESSAGE_PATH_VARIABLES_CONFIG);
-    if (variablesJsonPath != null && !variablesJsonPath.isEmpty()) {
-      messageVariablesConfig = JsonPath.compile(variablesJsonPath);
-    }
+    parser = buildParser(config);
   }
 
   // The documentation specifies that we probably shouldn't block here but I'm not sure what the
@@ -101,6 +82,27 @@ public class ZeebeSinkTask extends SinkTask {
     return VersionInfo.getVersion();
   }
 
+  private FinalCommandStep<Void> prepareRequest(final SinkRecord record) {
+    final Message message = parser.parse(record);
+    PublishMessageCommandStep3 request =
+        client
+            .newPublishMessageCommand()
+            .messageName(message.getName())
+            .correlationKey(message.getKey())
+            .messageId(message.getId());
+
+    if (message.hasTimeToLive()) {
+      request = request.timeToLive(message.getTimeToLive());
+    }
+
+    if (message.hasVariables()) {
+      request = request.variables(message.getVariables());
+    }
+
+    LOGGER.debug("Publishing message {}", message);
+    return request;
+  }
+
   private ZeebeClient buildClient(final ZeebeSinkConnectorConfig config) {
     final long requestTimeoutMs = config.getLong(ZeebeClientConfigDef.REQUEST_TIMEOUT_CONFIG);
 
@@ -110,56 +112,23 @@ public class ZeebeSinkTask extends SinkTask {
         .build();
   }
 
-  private FinalCommandStep<Void> prepareRequest(final SinkRecord record) {
-    final String messageId = generateMessageId(record);
-    final DocumentContext document = JsonPath.parse(record.value().toString());
-    final String messageName = document.read(messageNameConfig).toString();
-    final String correlationKey = document.read(messageKeyConfig).toString();
-    Object variables = null;
-    Duration timeToLive = null;
+  private JsonRecordParser buildParser(final ZeebeSinkConnectorConfig config) {
+    final Builder builder =
+        JsonRecordParser.builder()
+            .withKeyPath(config.getString(ZeebeSinkConnectorConfig.MESSAGE_PATH_KEY_CONFIG))
+            .withNamePath(config.getString(ZeebeSinkConnectorConfig.MESSAGE_PATH_NAME_CONFIG));
 
-    PublishMessageCommandStep3 request =
-        client
-            .newPublishMessageCommand()
-            .messageName(messageName)
-            .correlationKey(correlationKey)
-            .messageId(messageId);
-
-    if (messageTtlConfig != null) {
-      try {
-        final long timeToLiveMs = document.read(messageTtlConfig);
-        timeToLive = Duration.ofMillis(timeToLiveMs);
-        request = request.timeToLive(timeToLive);
-      } catch (final PathNotFoundException e) {
-        LOGGER.trace("No timeToLive found, ignoring");
-      }
+    final String ttlPath = config.getString(ZeebeSinkConnectorConfig.MESSAGE_PATH_TTL_CONFIG);
+    if (ttlPath != null && !ttlPath.isEmpty()) {
+      builder.withTtlPath(ttlPath);
     }
 
-    if (messageVariablesConfig != null) {
-      try {
-        variables = document.read(messageVariablesConfig);
-        LOGGER.debug("Publishing message with variables {}", variables);
-        request = request.variables(variables);
-      } catch (final PathNotFoundException e) {
-        LOGGER.trace("No variables found, ignoring");
-      }
-    } else {
-      request = request.variables(record.value());
+    final String variablesPath =
+        config.getString(ZeebeSinkConnectorConfig.MESSAGE_PATH_VARIABLES_CONFIG);
+    if (variablesPath != null && !variablesPath.isEmpty()) {
+      builder.withVariablesPath(variablesPath);
     }
 
-    LOGGER.debug(
-        "Publishing message with ID {}, name {}, correlation key {}, timeToLive {}, and variables {}",
-        messageId,
-        messageName,
-        correlationKey,
-        timeToLive,
-        variables);
-    return request;
-  }
-
-  // using a combination of the topic, partition, and offset allows us to ensure a Kafka record is
-  // strictly published at most once for a given workflow instance
-  private String generateMessageId(final SinkRecord record) {
-    return record.topic() + ":" + record.kafkaPartition() + ":" + record.kafkaOffset();
+    return builder.build();
   }
 }

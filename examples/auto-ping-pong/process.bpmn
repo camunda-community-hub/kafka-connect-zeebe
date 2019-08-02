@@ -6,7 +6,7 @@
     </bpmn:startEvent>
     <bpmn:serviceTask id="ServiceTask_1sx6rbe" name="To Kafka">
       <bpmn:extensionElements>
-        <zeebe:taskDefinition type="kafka" />
+        <zeebe:taskDefinition type="auto-ping" />
         <zeebe:taskHeaders>
           <zeebe:header key="topic" value="auto-pong" />
         </zeebe:taskHeaders>
@@ -26,7 +26,7 @@
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="SequenceFlow_1ghzjh3" name="Sink connector publishes pong" sourceRef="IntermediateCatchEvent_0iqm2ei" targetRef="EndEvent_07vkxen" />
   </bpmn:process>
-  <bpmn:message id="Message_19mpeg2" name="pong">
+  <bpmn:message id="Message_19mpeg2" name="auto-pong">
     <bpmn:extensionElements>
       <zeebe:subscription correlationKey="key" />
     </bpmn:extensionElements>

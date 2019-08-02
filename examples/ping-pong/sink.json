@@ -1,5 +1,5 @@
 {
-  "name": "zeebe-sink",
+  "name": "ping-pong-sink",
   "config": {
     "connector.class": "io.zeebe.kafka.connect.ZeebeSinkConnector",
     "tasks.max": "1",
@@ -12,7 +12,6 @@
     "zeebe.client.requestTimeout": "10000",
     "message.path.messageName": "$.name",
     "message.path.correlationKey": "$.key",
-    "message.path.variables": "$.variables",
-    "message.path.timeToLive": "$.ttl"
+    "message.path.variables": "$.payload"
   }
 }

@@ -95,8 +95,12 @@ public class ZeebeSourceTask extends SourceTask {
       }
 
       // the poll API expects null when no data is available
-      LOGGER.trace("Polled {} jobs", records.size());
-      return records.isEmpty() ? null : records;
+      if (!records.isEmpty()) {
+        LOGGER.trace("Polled {} jobs", records.size());
+        return records;
+      }
+
+      return null;
     }
 
     close();
@@ -197,6 +201,7 @@ public class ZeebeSourceTask extends SourceTask {
     if (isJobInvalid(job)) {
       handleInvalidJob(client, job);
     } else {
+      LOGGER.trace("Activated job {}", job);
       this.jobs.add(job);
     }
   }

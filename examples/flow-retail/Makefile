@@ -17,9 +17,14 @@ create-sink-connector:
 
 .PHONY: create-workflow
 create-workflow:
-	docker-compose -f $(DOCKER_FILE) exec zeebe zbctl create instance --variables '{"name": "pong", "payload": { "foo": ${id} }, "key": ${id}}' ping-pong
+	docker-compose -f $(DOCKER_FILE) exec zeebe zbctl create instance --variables '{"orderId": ${id}}' flow-retail
+
+.PHONY: start-logger
+start-logger:
+	cd $(SELF_DIR)/../.. && \
+		mvn exec:java -Dexec.mainClass=io.zeebe.kafka.connect.LoggerWorker -Dexec.classpathScope="test"
 
 .PHONY: start-producer
 start-producer:
 	docker-compose -f $(DOCKER_FILE) exec kafka \
-	kafka-console-producer --request-required-acks 1 --broker-list kafka:19092 --topic pong
+	kafka-console-producer --request-required-acks 1 --broker-list kafka:19092 --topic payment-confirm

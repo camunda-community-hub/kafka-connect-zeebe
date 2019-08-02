@@ -1,7 +1,8 @@
-SELF_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
-DOCKER_DIR := $(SELF_DIR)docker
-EXAMPLES_DIR := $(SELF_DIR)examples
-BUILD_DIR := $(SELF_DIR)target
+SELF_DIR := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
+DOCKER_DIR := $(SELF_DIR)/docker
+DOCKER_FILE := $(DOCKER_DIR)/docker-compose.yml
+EXAMPLES_DIR := $(SELF_DIR)/examples
+BUILD_DIR := $(SELF_DIR)/target
 
 .DEFAULT_TARGET: build
 
@@ -19,7 +20,7 @@ prepare-docker:
 
 .PHONY: docker
 docker: prepare-docker
-	docker-compose -f $(DOCKER_DIR)/docker-compose.yml --project-directory $(DOCKER_DIR) up -d
+	docker-compose -f $(DOCKER_FILE) --project-directory $(DOCKER_DIR) up -d
 
 .PHONY: docker-wait-zeebe
 docker-wait-zeebe:
@@ -31,7 +32,7 @@ docker-wait-connect:
 
 .PHONY: docker-stop
 docker-stop:
-	docker-compose -f $(DOCKER_DIR)/docker-compose.yml down -v
+	docker-compose -f $(DOCKER_FILE) down -v
 
 .PHONY: clean
 clean: docker-stop
@@ -42,12 +43,3 @@ monitor:
 	xdg-open "http://localhost:8080"
 	xdg-open "http://localhost:9021"
 
-.PHONY: ping-pong
-ping-pong: docker docker-wait-zeebe docker-wait-connect
-	zbctl deploy --insecure $(EXAMPLES_DIR)/ping-pong/ping-pong.bpmn && \
-	curl -X POST -H "Content-Type: application/json" --data @$(EXAMPLES_DIR)/ping-pong/source.json http://localhost:8083/connectors && \
-	curl -X POST -H "Content-Type: application/json" --data @$(EXAMPLES_DIR)/ping-pong/sink.json http://localhost:8083/connectors && \
-	for i in {1..10}; do \
-		zbctl create instance --insecure \
-			--variables "{\"name\": \"pong\", \"payload\": { \"foo\": $$i }, \"key\": $$i }" ping-pong;	\
-	done
