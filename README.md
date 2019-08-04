@@ -1,14 +1,21 @@
 # kafka-connect-zeebe
 
-[Kafka Connect](https://docs.confluent.io/2.0.0/connect/)or for [Zeebe.io](http://zeebe.io/)
+[Zeebe](https://zeebe.io) Source and sink connectors plugins for [Kafka Connect](https://docs.confluent.io/current/connect/index.html).
 
-**This is a prototype for a POC - it is not production ready!**
+The Zeebe source connector allows external systems, through Kafka, to process Zeeb service tasks, 
+and the sink connector allows those same external systems to publish the results back to Zeebe.
 
-See this blog post for an introduction: https://zeebe.io/blog/2018/12/writing-an-apache-kafka-connector-for-zeebe/
+This allows an existing architecture, comprised of microservices communicating through a Kafka bus,
+to leverage Zeebe to orchestrate your [workflows](https://zeebe.io/blog/2019/06/workflows-are-everywhere/),
+without having to immediately rewrite your core processes.
 
-Features:
-* Correlate messages from a Kafka topic with Zeebe workflows.
-* Send messages from a workflow in Zeebe to a Kafka topic.
+See this [blog post](https://zeebe.io/blog/2018/12/writing-an-apache-kafka-connector-for-zeebe/) for an introduction.
+
+# Features
+
+* Correlate messages from a Kafka topic with Zeebe workflow instances.
+* Process service tasks from a Zeebe workflow instance by publishing a record to a Kafka topic, 
+  allowing existing Kafka-aware workers to do the actual processing.
 
 ![Overview](doc/images/overview.png)
 
@@ -20,33 +27,10 @@ Features:
 
 # Quickstart
 
-**TBD**
-
-# Examples
-
 You can find a series of examples [here](examples) which should highlight how to use the
 connectors.
 
-## Docker
-
-The quickest way to get a feel for how this connector works (or to test it during development) is to use the provided [docker/docker-compose.yml](docker/docker-compose.yml) file.
-
-After building the project and running `docker-compose up` in the `docker/` folder, or a simple `make build docker` from the project root, the following services will be started:
-
-1. Zeebe broker (ports: 26500 for communication, 9600 for monitoring)
-1. Operate (port: 8080)
-1. Elasticsearch (port: 9200) (required by Operate)
-1. Kafka (port: 9092)
-1. Zookeeper (port: 2181) (required by Kafka)
-1. Confluent Schema Registry (port: 8081)
-1. Confluent Kafka Connect (port: 8083)
-1. Confluent Control Center (port: 9021)
-
-You can use Operate (e.g. [localhost:8080](http://localhost:8080) to monitor workflows, and use Control Center e.g. [localhost:9021](http://localhost:9021) to monitor Kafka, create connectors, etc.
-
-Running `make monitor` once all services are up and running will open the respective pages. 
-
-# Reference
+# Connectors
 
 The plugin comes with two connectors, a source and a sink connector. 
 

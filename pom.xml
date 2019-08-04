@@ -233,19 +233,6 @@
               <goal>single</goal>
             </goals>
             <configuration>
-              <descriptors>
-                <descriptor>src/assembly/development.xml</descriptor>
-                <descriptor>src/assembly/package.xml</descriptor>
-              </descriptors>
-            </configuration>
-          </execution>
-          <execution>
-            <id>make-assembly-uber</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
               <descriptorRefs>
                 <descriptorRef>jar-with-dependencies</descriptorRef>
               </descriptorRefs>
@@ -270,12 +257,17 @@
             <configuration>
               <title>Kafka Connect Zeebe</title>
               <documentationUrl>https://github.com/zeebe-io/kafka-connect-zeebe/</documentationUrl>
-              <description>Write description</description>
+              <description>
+                The Zeebe source connector allows external systems, through Kafka, to process Zeeb
+                service tasks, and the sink connector allows those same external systems to publish
+                the results back to Zeebe. This allows existing processes connected through a Kafka
+                bus to be orchestrated by Zeebe.
+              </description>
               <logo>logos/zeebe.png</logo>
 
               <supportProviderName>Camunda Services GmbH</supportProviderName>
-              <supportSummary>Camunda supports the Zeebe source and sink connectors as a community
-                project.
+              <supportSummary>
+                Camunda supports the Zeebe source and sink connectors as a community project.
               </supportSummary>
               <supportUrl>https://github.com/zeebe-io/kafka-connect-zeebe/</supportUrl>
               <supportLogo>logos/camunda.png</supportLogo>
@@ -285,12 +277,6 @@
               <ownerName>Camunda Services GmbH</ownerName>
               <ownerUrl>https://zeebe.io/</ownerUrl>
               <ownerLogo>logos/zeebe.png</ownerLogo>
-
-              <!-- TODO later
-              <dockerNamespace>camunda</dockerNamespace>
-              <dockerName>cp-kafka-connect</dockerName>
-              <dockerTag>${project.version}</dockerTag>
-              -->
 
               <componentTypes>
                 <componentType>sink</componentType>
@@ -311,7 +297,7 @@
               </requirements>
 
               <deliveryGuarantee>
-                <deliveryGuarantee>exactlyOnce</deliveryGuarantee>
+                <deliveryGuarantee>atLeastOnce</deliveryGuarantee>
               </deliveryGuarantee>
 
               <confluentControlCenterIntegration>true</confluentControlCenterIntegration>
@@ -323,21 +309,6 @@
   </build>
 
   <profiles>
-    <profile>
-      <id>standalone</id>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-assembly-plugin</artifactId>
-            <configuration>
-              <descriptors>
-                <descriptor>src/assembly/standalone.xml</descriptor>
-              </descriptors>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
     <profile>
       <id>release</id>
       <properties>

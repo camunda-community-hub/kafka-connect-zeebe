@@ -1,40 +1,46 @@
 # Ping Pong
 
-This example showcases how jobs are consumed by Kafka (e.g. `ping`), and how records can be published
-to Zeebe in order to `pong`, using the following [process](process.bpmn)
+This is a very simple example to showcase the interaction between Zeebe and Kafka using Kafka Connect
+and the Zeebe source and sink connectors, using the following process:
 
 ![Process](process.png)
 
-The difference with the [Auto Ping Pong](../auto-ping-pong) example is that here
-we need to interact with Kafka in order to complete it; this also allows us to monitor the state of
-both systems, through Operate and Control Center.
+When an instance of this process is created, the service task `To Kafka` will be activated by the
+source connector `ping`, which will publish a record on the topic `pong`. That record will have
+the job key as its key, and as value the job itself serialized to JSON.
 
-Once a workflow instance is started, the process will wait at the service task.
-
-The job created by service task is consumed by the source connector, which produces a record
-on the `ping` topic. The record will contain the variables of the job, including 
-the correlation key for the intermediate message catch event. Using `kafkacat` in consumer
-mode, or using Control Center, you can then visualize the records currently published to this topic.
-
-Once completed, the process will then move to the intermediate catch event; in order to proceed further,
-it will require a record to be published on the `pong` Kafka topic. When that record is published,
-it will then complete the workflow instance.
-
-Records published on the `pong` topic should have the following format:
+The `pong` sink connector will consume records from the `pong` topic, and publish a message to
+its Zeebe broker. For example, given the following record published to `pong` on partition 1, 
+at offset 1, and with the following value:
 
 ```json
 {
-  "name": "pong", 
-  "variables": { 
-    "foo": 1
+  "name": "pong",
+  "key": 1,
+  "payload": {
+    "foo": "bar"
   },
-  "key": 1, 
-  "ttl": 10000
+  "ttl": 10000,
+  ...
 }
 ```
 
-This is so the JSON path configured in the sink connector can properly construct our Zeebe message. Note
-that the key here obviously should be updated to correlate to the correct message.
+It will publish the following message to Zeebe:
+
+```json
+{
+  "name": "pong",
+  "correlationKey": 1,
+  "timeToLive": 10000,
+  "messageId": "pong:1:1",
+  "variables": {
+    "foo": "bar"
+  }
+}
+```
+
+If you inspect the instance in Operate, you will see that it should be completed, and `foo` will now
+be a top level variable.
 
 ## Running the example
 
@@ -52,60 +58,35 @@ To run the example you need the following tools on your system:
 
 > To use the `Makefile` you will also need [curl](https://curl.haxx.se/).
 
-Before starting, you need to make sure that the connector was built and the docker services are
-up and running. You can use the `Makefile` in the root folder of the project, and run the following:
+Running `make` will build the project, start the services, deploy all resources, and create
+a single workflow instance. Broken down into steps:
 
-#### Start services
+#### Setup
 
 ```shell
 make build docker docker-wait-zeebe docker-wait-connect
 ```
 
-This will ensure that everything is up and running before we start. You can then monitor your system
-using Confluent Control Center (on port `9021`, e.g. `http://localhost:9021`), and Operate (on port 
-`8080`, e.g. `http://localhost:8080`).
+This will ensure the project is built, and all the services are up and ready.
 
 #### Deploy workflow and connectors
 
-Once everything is up and running, you can start the example by running:
-
 ```shell
-make deploy-workflow create-source-connector create-sink-connector
+make workflow source sink
 ```
 
 #### Create an instance
 
-You can now create a workflow instance of the `ping-pong` process; this instance will start, and create a job which is consumed by the source connector. 
-
 To create the instance, run:
 
 ```shell
-make id=1 create-workflow
+make instance
 ```
-
-You can change the ID when creating more workflows.
-
-#### Publishing a message
-
-To publish a message back through the connector, we have to produce a record on the `pong` topic. The record should have the format as described above.
-
-To publish a message, run:
-
-```shell
-make start-producer
-```
-
-This will start the [kafka-console-producer](https://kafka.apache.org/quickstart#quickstart_send).
-Simply write the expected JSON record, e.g.:
-
-```json
-{"name": "pong", "key": 1, "payload": {"foo": "bar"}}
-``` 
-
 ### Manually
 
-If `make` is not available on your system (if on Windows, WSL could help there), then you can run
-steps manually:
+If `make` is not available on your system then you can run steps manually:
+
+#### Setup
 
 Build the project by running
 
@@ -135,7 +116,13 @@ docker cp examples/ping-pong/process.bpmn $(shell docker-compose -f docker/docke
 docker-compose -f docker/docker-compose.yml exec zeebe zbctl deploy /tmp/process.bpmn
 ```
 
+#### Deploy workflow and connectors
+
+If `curl` is not available, you can also use [Control Center](http://localhost:9021) to create the connectors.
+Make sure to configure them according to the following properties: [source connector properties](source.json), [sink connector properties](sink.json)
+
 Now create the source connector:
+
 ```shell
 curl -X POST -H "Content-Type: application/json" --data @examples/ping-pong/source.json http://localhost:8083
 ```
@@ -146,23 +133,13 @@ Next, create the sink connector:
 curl -X POST -H "Content-Type: application/json" --data @examples/ping-pong/source.json http://localhost:8083
 ```
 
-After this we can now create a workflow instance:
+#### Create a workflow instance
+
+We can now create a workflow instance:
 
 ```shell
 docker-compose -f docker/docker-compose.yml exec zeebe \
-	zbctl create instance --variables "{\"name\": \"pong\", \"payload\": { \"foo\": 1}, \"key\": 1}" ping-pong
+	zbctl create instance --variables "{\"name\": \"pong\", \"payload\": { \"foo\": "bar"}, \"key\": 1}" ping-pong
 ```
 
-Then we now have to start the Kafka console producer:
-
-```shell
-docker-compose -f docker/docker-compose.yml exec kafka \
-	kafka-console-producer --request-required-acks 1 --broker-list kafka:19092 --topic pong
-```
-
-This will start the [kafka-console-producer](https://kafka.apache.org/quickstart#quickstart_send).
-Simply write the expected JSON record, e.g.:
-
-```json
-{"name": "pong", "key": 1, "payload": {"foo": "bar"}}
-``` 
+Replace the value of the key variable to change the correlation key.
