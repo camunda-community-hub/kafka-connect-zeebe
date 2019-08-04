@@ -13,16 +13,16 @@
     <bpmn:endEvent id="IntermediateThrowEvent_061efmr" name="Paid">
       <bpmn:incoming>SequenceFlow_0zeyv82</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:serviceTask id="Task_1hlq8fc" name="Logger&#10;(for demo purposes only)">
+    <bpmn:serviceTask id="Task_1hlq8fc" name="Payment Requested Logger">
       <bpmn:extensionElements>
-        <zeebe:taskDefinition type="logger" retries="1" />
+        <zeebe:taskDefinition type="payment-requested" retries="1" />
       </bpmn:extensionElements>
       <bpmn:incoming>SequenceFlow_0bchnjg</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_0xaovco</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:serviceTask id="ServiceTask_1gkp2cl" name="Logger&#10;(for demo purposes only)">
+    <bpmn:serviceTask id="ServiceTask_1gkp2cl" name="Payment Confirmed Logger">
       <bpmn:extensionElements>
-        <zeebe:taskDefinition type="logger" retries="1" />
+        <zeebe:taskDefinition type="payment-confirmed" retries="1" />
       </bpmn:extensionElements>
       <bpmn:incoming>SequenceFlow_1nyrhz1</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_0zeyv82</bpmn:outgoing>
@@ -34,7 +34,7 @@
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="sendMessage" />
         <zeebe:taskHeaders>
-          <zeebe:header key="kafka-topic" value="flow-retail" />
+          <zeebe:header key="kafka-topic" value="payment-request" />
         </zeebe:taskHeaders>
       </bpmn:extensionElements>
       <bpmn:incoming>SequenceFlow_1n5obj2</bpmn:incoming>
@@ -42,8 +42,7 @@
     </bpmn:serviceTask>
     <bpmn:sequenceFlow id="SequenceFlow_0bchnjg" sourceRef="ServiceTask_1xwystz" targetRef="Task_1hlq8fc" />
     <bpmn:textAnnotation id="TextAnnotation_0j6ph45">
-      <bpmn:text>TaskType: sendMessage
-</bpmn:text>
+      <bpmn:text>TaskType: sendMessage</bpmn:text>
     </bpmn:textAnnotation>
     <bpmn:association id="Association_00jdcdo" sourceRef="ServiceTask_1xwystz" targetRef="TextAnnotation_0j6ph45" />
   </bpmn:process>

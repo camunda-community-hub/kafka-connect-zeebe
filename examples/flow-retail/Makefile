@@ -3,7 +3,7 @@ include $(SELF_DIR)/../../Makefile
 
 .DEFAULT_TARGET: flow-retail
 .PHONY: flow-retail
-flow-retail: build docker docker-wait-zeebe docker-wait-connect workflow source sink
+flow-retail: workflow source sink
 
 .PHONY: workflow
 workflow:
@@ -25,8 +25,8 @@ instance:
 
 .PHONY: logger
 logger:
-	cd $(SELF_DIR)/../.. && \
-		mvn exec:java -Dexec.mainClass=io.zeebe.kafka.connect.LoggerWorker -Dexec.classpathScope="test"
+	cd $(ROOT_DIR) && \
+		mvn exec:java -Dexec.mainClass=io.zeebe.kafka.connect.LoggerWorker -Dexec.classpathScope="test" -Djob.types="payment-requested,payment-confirmed"
 
 .PHONY:
 producer:

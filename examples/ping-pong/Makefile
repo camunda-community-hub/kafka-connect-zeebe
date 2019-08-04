@@ -3,7 +3,7 @@ include $(SELF_DIR)/../../Makefile
 
 .DEFAULT_TARGET: ping-pong
 .PHONY: ping-pong
-ping-pong: build docker docker-wait-zeebe docker-wait-connect workflow source sink instance
+ping-pong: workflow source sink instance
 
 .PHONY: workflow
 workflow:

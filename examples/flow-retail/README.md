@@ -13,13 +13,8 @@ of the work done by the external system (or systems).
 
 > The `Logger` tasks are there mostly for demo purposes to better visualize the flow.
 
-Once a workflow instance is started, the process will wait at the service task. Once that
-task is consumed by the source connector, the workflow will continue to the first `Logger` task,
-which simply prints out the job to standard out, allowing us to track progress, before moving on
-to the intermediate catch event, where it will wait for a message incoming from the sink connector.  
-
-> You can visualize the records published by the source connector using the [kafka-console-consumer](https://kafka.apache.org/quickstart#quickstart_consume)
-  or simply Control Center. The records are published on the topic `payment-request`
+In this example, we'll be simulating the external payment confirmation process by manually producing
+records to the `payment-confirm` .
 
 To complete the message we will then use the [kafka-console-producer](https://kafka.apache.org/quickstart#quickstart_send),
 producing records of the following format:
@@ -32,41 +27,26 @@ producing records of the following format:
 }
 ```
 
+> You can visualize the records published by the source connector using the [kafka-console-consumer](https://kafka.apache.org/quickstart#quickstart_consume)
+  or simply Control Center. The records are published on the topic `payment-request`.
+
 ## Running the example
 
 The simplest way to run through it is to use the provided `Makefile`. If that's not an
 option on your system, then you can run all the steps manually.
 
-### Requirements
-
-To run the example you need the following tools on your system:
-
-1. [docker-compose](https://docs.docker.com/compose/)
-1. [maven](https://maven.apache.org/) (to build the project)
+Before starting, make sure you already set up everything as listed [here](https://github.com/zeebe-io/kafka-connect-zeebe/tree/master/examples#setup).
 
 ### Makefile
 
 > To use the `Makefile` you will also need [curl](https://curl.haxx.se/).
 
-Before starting, you need to make sure that the connector was built and the docker services are
-up and running. You can use the `Makefile` in the root folder of the project, and run the following:
 
-#### Start services
-
-```shell
-make build docker docker-wait-zeebe docker-wait-connect
-```
-
-This will ensure that everything is up and running before we start. You can then monitor your system
-using Confluent Control Center (on port `9021`, e.g. `http://localhost:9021`), and Operate (on port 
-`8080`, e.g. `http://localhost:8080`).
 
 #### Deploy workflow and connectors
 
-Once everything is up and running, you can start the example by running:
-
 ```shell
-make deploy-workflow create-source-connector create-sink-connector
+make workflow source sink
 ```
 
 #### Create an instance
@@ -109,33 +89,10 @@ Simply write the expected JSON record, e.g.:
 If `make` is not available on your system (if on Windows, WSL could help there), then you can run
 steps manually:
 
-Build the project by running
+#### Deploy workflow and connectors
 
-```shell
-mvn clean package
-```
-
-Copy the resulting development connector folder at `target/kafka-connect-zeebe-*-development/share/java/kafka-connect-zeebe` 
-(replacing the star by the version, e.g. `1.0.0-SNAPSHOT`) to `docker/connectors/kafka-connect-zeebe`
-
-Now start all docker services:
-
-```shell
-docker-compose -f docker/docker-compose.yml up -d
-```
-
-
-To ensure all services are up and running, you query the following URLs, which should return 2xx
-responses: `http://localhost:9600/ready` (Zeebe ready check) and `http://localhost:8083/` (Kafka
-Connect API endpoint)
-
-Once everything is up and running, deploy the workflow. 
-First, we need to copy the process file into the Zeebe container.
-
-```shell
-docker cp examples/flow-retail/process.bpmn $(shell docker-compose -f docker/docker-compose.yml ps -q zeebe):/tmp/process.bpmn
-docker-compose -f docker/docker-compose.yml exec zeebe zbctl deploy /tmp/process.bpmn
-```
+If `curl` is not available, you can also use [Control Center](http://localhost:9021) to create the connectors.
+Make sure to configure them according to the following properties: [source connector properties](source.json), [sink connector properties](sink.json)
 
 Now create the source connector:
 ```shell
@@ -148,28 +105,34 @@ Next, create the sink connector:
 curl -X POST -H "Content-Type: application/json" --data @examples/flow-retail/source.json http://localhost:8083
 ```
 
-After this we can now create a workflow instance:
+#### Create a workflow instance
+
+We can now create a workflow instance:
 
 ```shell
-docker-compose -f docker/docker-compose.yml exec zeebe \
-	zbctl create instance --variables "{\"orderId\": 1}" flow-retail
+docker-compose -f docker/docker-compose.yml exec zeebe zbctl create instance --variables "{\"orderId\": 1}" flow-retail
 ```
 
-And start the logger worker to complete the `Logger` service tasks:
+Replace the value of the `orderId` variable to change the correlation key.
+
+#### Logger worker
+
+Open a separate console, navigate to the root project directory, and run
 
 ```shell
-  mvn exec:java -Dexec.mainClass=io.zeebe.kafka.connect.LoggerWorker -Dexec.classpathScope="test"
+  mvn exec:java -Dexec.mainClass=io.zeebe.kafka.connect.LoggerWorker -Dexec.classpathScope="test" -Djob.types="payment-requested,payment-confirmed"
 ```
 
-Then we now have to start the Kafka console producer:
+#### Confirming order (Kafka Producer)
+
+In order to simulate the external payment confirmation service, let's start a
+[Kafka producer](https://kafka.apache.org/quickstart#quickstart_send).
 
 ```shell
-docker-compose -f docker/docker-compose.yml exec kafka \
-	kafka-console-producer --request-required-acks 1 --broker-list kafka:19092 --topic payment-confirm
+docker-compose -f docker/docker-compose.yml exec kafka  kafka-console-producer --request-required-acks 1 --broker-list kafka:19092 --topic payment-confirm
 ```
 
-This will start the [kafka-console-producer](https://kafka.apache.org/quickstart#quickstart_send).
-Simply write the expected JSON record, e.g.:
+To confirm the order, we can write a record of the following format:
 
 ```json
 {"eventType": "OrderPaid", "orderId": 1, "amount": 4000}
