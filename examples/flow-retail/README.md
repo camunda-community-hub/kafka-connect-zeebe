@@ -41,7 +41,7 @@ Before starting, make sure you already set up everything as listed [here](https:
 
 > To use the `Makefile` you will also need [curl](https://curl.haxx.se/).
 
-
+Running `make` deploy all resources, and create a single workflow instance. Broken down into steps:
 
 #### Deploy workflow and connectors
 
@@ -51,20 +51,14 @@ make workflow source sink
 
 #### Create an instance
 
-You can now create a workflow instance of the `flow-retail` process; this instance will start, and create a job which is consumed by the source connector. 
-
-To create the instance, run:
-
 ```shell
-make id=1 create-workflow
+make workflow
 ```
-
-The value of `id` will be the `orderId` variable for the instance.
 
 #### Start the logger worker
 
 ```shell
-make start-logger
+make logger
 ```
 
 #### Publishing a message
@@ -74,7 +68,7 @@ To publish a message back through the connector, we have to produce a record on 
 To publish a message, run:
 
 ```shell
-make start-producer
+make producer
 ```
 
 This will start the [kafka-console-producer](https://kafka.apache.org/quickstart#quickstart_send).

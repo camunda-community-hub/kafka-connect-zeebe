@@ -28,7 +28,7 @@ logger:
 	cd $(ROOT_DIR) && \
 		mvn exec:java -Dexec.mainClass=io.zeebe.kafka.connect.LoggerWorker -Dexec.classpathScope="test" -Djob.types="payment-requested,payment-confirmed"
 
-.PHONY:
+.PHONY: producer
 producer:
 	docker-compose -f $(DOCKER_FILE) exec kafka \
 	kafka-console-producer --request-required-acks 1 --broker-list kafka:19092 --topic payment-confirm
