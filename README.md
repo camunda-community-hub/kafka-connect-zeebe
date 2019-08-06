@@ -21,9 +21,12 @@ See this [blog post](https://zeebe.io/blog/2018/12/writing-an-apache-kafka-conne
 
 # Installation
 
-* Build via mvn package 
+* Build via `mvn package`
 * Find the plugin package under `target/components/packages`, which will be a ZIP file: e.g. `target/components/packages/zeebe-io-kafka-connect-zeebe-1.0.0.zip`
 * Follow the [plugin installation instructions](https://docs.confluent.io/current/connect/managing/install.html#connect-install-connectors)
+
+> Alternatively, for development purposes or just to try it out, you can grab the resulting uber JAR and 
+  place it in your [Kafka Connect plugin path](https://docs.confluent.io/current/connect/userguide.html#installing-plugins)
 
 # Quickstart
 
