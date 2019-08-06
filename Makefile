@@ -36,7 +36,7 @@ docker-stop:
 
 .PHONY: clean
 clean: docker-stop
-	mvn clean
+	cd $(ROOT_DIR) && mvn clean
 
 .PHONY: monitor
 monitor:
