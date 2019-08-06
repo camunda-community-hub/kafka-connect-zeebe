@@ -27,9 +27,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import org.apache.kafka.connect.data.Schema;
@@ -40,18 +41,21 @@ import org.slf4j.LoggerFactory;
 
 /** Source task for Zeebe which activates jobs, publishes results, and completes jobs */
 public class ZeebeSourceTask extends SourceTask {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(ZeebeSourceTask.class);
+  private static final int JOB_QUEUE_TIMEOUT_MS = 5000;
 
   private final AtomicBoolean running;
-  private final Queue<ActivatedJob> jobs;
+  private final BlockingQueue<ActivatedJob> jobs;
 
   private String jobHeaderTopic;
   private ZeebeClient client;
   private List<JobWorker> workers;
+  private int maxJobsToActivate;
 
   public ZeebeSourceTask() {
     this.running = new AtomicBoolean(false);
-    this.jobs = new ConcurrentLinkedQueue<>();
+    this.jobs = new LinkedBlockingQueue<>();
   }
 
   @Override
@@ -59,9 +63,8 @@ public class ZeebeSourceTask extends SourceTask {
     final ZeebeSourceConnectorConfig config = new ZeebeSourceConnectorConfig(props);
     final List<String> jobTypes = config.getList(ZeebeSourceConnectorConfig.JOB_TYPES_CONFIG);
 
+    maxJobsToActivate = config.getInt(ZeebeSourceConnectorConfig.MAX_JOBS_TO_ACTIVATE_CONFIG);
     client = buildClient(config);
-
-    // build workers as last step since this relies on parsed configuration
     workers =
         jobTypes.stream().map(type -> this.newWorker(config, type)).collect(Collectors.toList());
 
@@ -71,22 +74,21 @@ public class ZeebeSourceTask extends SourceTask {
   @Override
   public List<SourceRecord> poll() throws InterruptedException {
     if (running.get()) {
-      final List<SourceRecord> records = new ArrayList<>();
-      ActivatedJob job;
+      final List<ActivatedJob> activatedJobs = new ArrayList<>();
 
-      // API specifies to block when no data is available but regularly return control; TBD what
-      // this means exactly
-      while ((job = jobs.poll()) != null) {
-        records.add(transformJob(job));
+      // if no jobs available, block up to 1 seconds until we receive one
+      if (jobs.isEmpty()) {
+        final ActivatedJob job = jobs.poll(JOB_QUEUE_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        if (job == null) {
+          return null;
+        }
+
+        activatedJobs.add(job);
       }
 
-      // the poll API expects null when no data is available
-      if (!records.isEmpty()) {
-        LOGGER.trace("Polled {} jobs", records.size());
-        return records;
-      }
-
-      return null;
+      jobs.drainTo(activatedJobs, maxJobsToActivate - 1);
+      LOGGER.trace("Publishing {} source records", activatedJobs.size());
+      return activatedJobs.stream().map(this::transformJob).collect(Collectors.toList());
     }
 
     close();
@@ -173,8 +175,6 @@ public class ZeebeSourceTask extends SourceTask {
     jobHeaderTopic = config.getString(ZeebeSourceConnectorConfig.JOB_HEADER_TOPICS_CONFIG);
     final List<String> jobVariables =
         config.getList(ZeebeSourceConnectorConfig.JOB_VARIABLES_CONFIG);
-    final int maxJobsToActivate =
-        config.getInt(ZeebeSourceConnectorConfig.MAX_JOBS_TO_ACTIVATE_CONFIG);
     final Duration jobTimeout =
         Duration.ofMillis(config.getLong(ZeebeSourceConnectorConfig.JOB_TIMEOUT_CONFIG));
     final Duration requestTimeout =
