@@ -46,13 +46,6 @@ public class ZeebeSourceTask extends SourceTask {
   private final Queue<ActivatedJob> jobs;
 
   private String jobHeaderTopic;
-  private List<String> jobVariables;
-  private int maxJobsToActivate;
-  private Duration jobTimeout;
-  private Duration requestTimeout;
-  private Duration pollInterval;
-  private String workerName;
-
   private ZeebeClient client;
   private List<JobWorker> workers;
 
@@ -67,24 +60,17 @@ public class ZeebeSourceTask extends SourceTask {
     final List<String> jobTypes = config.getList(ZeebeSourceConnectorConfig.JOB_TYPES_CONFIG);
 
     client = buildClient(config);
-    jobHeaderTopic = config.getString(ZeebeSourceConnectorConfig.JOB_HEADER_TOPICS_CONFIG);
-    jobVariables = config.getList(ZeebeSourceConnectorConfig.JOB_VARIABLES_CONFIG);
-    maxJobsToActivate = config.getInt(ZeebeSourceConnectorConfig.MAX_JOBS_TO_ACTIVATE_CONFIG);
-    jobTimeout = Duration.ofMillis(config.getLong(ZeebeSourceConnectorConfig.JOB_TIMEOUT_CONFIG));
-    requestTimeout = Duration.ofMillis(config.getLong(ZeebeClientConfigDef.REQUEST_TIMEOUT_CONFIG));
-    pollInterval =
-        Duration.ofMillis(config.getLong(ZeebeSourceConnectorConfig.POLL_INTERVAL_CONFIG));
-    workerName = config.getString(ZeebeSourceConnectorConfig.WORKER_NAME_CONFIG);
 
     // build workers as last step since this relies on parsed configuration
-    workers = jobTypes.stream().map(this::newWorker).collect(Collectors.toList());
+    workers =
+        jobTypes.stream().map(type -> this.newWorker(config, type)).collect(Collectors.toList());
 
     running.set(true);
   }
 
   @Override
   public List<SourceRecord> poll() throws InterruptedException {
-    while (running.get()) {
+    if (running.get()) {
       final List<SourceRecord> records = new ArrayList<>();
       ActivatedJob job;
 
@@ -183,7 +169,20 @@ public class ZeebeSourceTask extends SourceTask {
         .send();
   }
 
-  private JobWorker newWorker(final String type) {
+  private JobWorker newWorker(final ZeebeSourceConnectorConfig config, final String type) {
+    jobHeaderTopic = config.getString(ZeebeSourceConnectorConfig.JOB_HEADER_TOPICS_CONFIG);
+    final List<String> jobVariables =
+        config.getList(ZeebeSourceConnectorConfig.JOB_VARIABLES_CONFIG);
+    final int maxJobsToActivate =
+        config.getInt(ZeebeSourceConnectorConfig.MAX_JOBS_TO_ACTIVATE_CONFIG);
+    final Duration jobTimeout =
+        Duration.ofMillis(config.getLong(ZeebeSourceConnectorConfig.JOB_TIMEOUT_CONFIG));
+    final Duration requestTimeout =
+        Duration.ofMillis(config.getLong(ZeebeClientConfigDef.REQUEST_TIMEOUT_CONFIG));
+    final Duration pollInterval =
+        Duration.ofMillis(config.getLong(ZeebeSourceConnectorConfig.POLL_INTERVAL_CONFIG));
+    final String workerName = config.getString(ZeebeSourceConnectorConfig.WORKER_NAME_CONFIG);
+
     return client
         .newWorker()
         .jobType(type)
@@ -202,7 +201,7 @@ public class ZeebeSourceTask extends SourceTask {
       handleInvalidJob(client, job);
     } else {
       LOGGER.trace("Activated job {}", job);
-      this.jobs.add(job);
+      jobs.add(job);
     }
   }
 }
