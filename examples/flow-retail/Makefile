@@ -21,7 +21,7 @@ sink:
 .PHONY: instance
 instance:
   @ORDER_ID=$(shell read -p "Order ID: " orderId; echo $$orderId); \
-	docker-compose -f $(DOCKER_FILE) exec zeebe zbctl create instance --variables '{"orderId": $$ORDER_ID}' flow-retail
+	docker-compose -f $(DOCKER_FILE) exec zeebe zbctl create instance --variables "{\"orderId\": $$ORDER_ID}" flow-retail
 
 .PHONY: logger
 logger:

@@ -1,7 +1,6 @@
 SELF_DIR := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 include $(SELF_DIR)/../../Makefile
 
-.DEFAULT_TARGET: ping-pong
 .PHONY: ping-pong
 ping-pong: workflow source sink instance
 
@@ -22,4 +21,4 @@ sink:
 instance:
 	@KEY=$(shell read -p "Correlation key: " key; echo $$key); \
 	docker-compose -f $(DOCKER_FILE) exec zeebe \
-	zbctl create instance --variables '{"name": "pong", "payload": {"foo": "bar"}, "key": $$KEY}' ping-pong
+	zbctl create instance --variables "{\"name\": \"pong\", \"payload\": {\"foo\": \"bar\"}, \"key\": $$KEY}" ping-pong
