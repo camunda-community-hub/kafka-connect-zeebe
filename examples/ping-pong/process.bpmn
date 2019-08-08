@@ -29,7 +29,7 @@
       <bpmn:text>Job Type: ping</bpmn:text>
     </bpmn:textAnnotation>
     <bpmn:textAnnotation id="TextAnnotation_07gk4bu">
-      <bpmn:text>Topic: ping</bpmn:text>
+      <bpmn:text>Topic: pong</bpmn:text>
     </bpmn:textAnnotation>
     <bpmn:association id="Association_05vuc64" sourceRef="ServiceTask_1sx6rbe" targetRef="TextAnnotation_00v49jv" />
     <bpmn:association id="Association_0zyz146" sourceRef="ServiceTask_1sx6rbe" targetRef="TextAnnotation_07gk4bu" />
