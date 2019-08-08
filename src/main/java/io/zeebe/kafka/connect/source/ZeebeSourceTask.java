@@ -76,10 +76,12 @@ public class ZeebeSourceTask extends SourceTask {
     if (running.get()) {
       final List<ActivatedJob> activatedJobs = new ArrayList<>();
 
-      // if no jobs available, block up to 1 seconds until we receive one
+      // if no jobs available, block a few seconds until we receive one
       if (jobs.isEmpty()) {
+        LOGGER.trace("No jobs available, block for {}ms", JOB_QUEUE_TIMEOUT_MS);
         final ActivatedJob job = jobs.poll(JOB_QUEUE_TIMEOUT_MS, TimeUnit.MILLISECONDS);
         if (job == null) {
+          LOGGER.trace("No jobs available, returning control to caller");
           return null;
         }
 
@@ -87,7 +89,7 @@ public class ZeebeSourceTask extends SourceTask {
       }
 
       jobs.drainTo(activatedJobs, maxJobsToActivate - 1);
-      LOGGER.trace("Publishing {} source records", activatedJobs.size());
+      LOGGER.debug("Publishing {} source records", activatedJobs.size());
       return activatedJobs.stream().map(this::transformJob).collect(Collectors.toList());
     }
 
@@ -107,7 +109,7 @@ public class ZeebeSourceTask extends SourceTask {
     try {
       client.newCompleteCommand(key).send().join();
     } catch (final CancellationException e) {
-      LOGGER.trace("Complete command cancelled probably because task is stopping", e);
+      LOGGER.debug("Complete command cancelled probably because task is stopping", e);
     }
   }
 
@@ -117,6 +119,7 @@ public class ZeebeSourceTask extends SourceTask {
   }
 
   private void close() {
+    LOGGER.debug("Closing...");
     workers.forEach(JobWorker::close);
     workers.clear();
 
@@ -160,7 +163,7 @@ public class ZeebeSourceTask extends SourceTask {
   // throw an exception here on invalid jobs
   // should we block until the request is finished?
   private void handleInvalidJob(final JobClient client, final ActivatedJob job) {
-    LOGGER.info("No topic defined for job {}", job);
+    LOGGER.debug("No topic defined for job {}", job);
     client
         .newFailCommand(job.getKey())
         .retries(job.getRetries() - 1)
