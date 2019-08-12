@@ -27,11 +27,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.source.SourceRecord;
@@ -41,11 +41,11 @@ import org.slf4j.LoggerFactory;
 
 /** Source task for Zeebe which activates jobs, publishes results, and completes jobs */
 public class ZeebeSourceTask extends SourceTask {
-
   private static final Logger LOGGER = LoggerFactory.getLogger(ZeebeSourceTask.class);
   private static final int JOB_QUEUE_TIMEOUT_MS = 5000;
+  private static final int JOBS_QUEUE_CAPACITY = 10_000;
 
-  private final AtomicBoolean running;
+  private final AtomicReference<TaskState> taskState;
   private final BlockingQueue<ActivatedJob> jobs;
 
   private String jobHeaderTopic;
@@ -54,8 +54,8 @@ public class ZeebeSourceTask extends SourceTask {
   private int maxJobsToActivate;
 
   public ZeebeSourceTask() {
-    this.running = new AtomicBoolean(false);
-    this.jobs = new LinkedBlockingQueue<>();
+    this.taskState = new AtomicReference<>(TaskState.STOPPED);
+    this.jobs = new ArrayBlockingQueue<>(JOBS_QUEUE_CAPACITY);
   }
 
   @Override
@@ -68,39 +68,38 @@ public class ZeebeSourceTask extends SourceTask {
     workers =
         jobTypes.stream().map(type -> this.newWorker(config, type)).collect(Collectors.toList());
 
-    running.set(true);
+    if (!taskState.compareAndSet(TaskState.STOPPED, TaskState.STARTED)) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Expected task to be stopped before start() is called, but current state is '%s'",
+              taskState.get()));
+    }
   }
 
+  @SuppressWarnings("squid:S1168")
   @Override
   public List<SourceRecord> poll() throws InterruptedException {
-    if (running.get()) {
-      final List<ActivatedJob> activatedJobs = new ArrayList<>();
-
-      // if no jobs available, block a few seconds until we receive one
-      if (jobs.isEmpty()) {
-        LOGGER.trace("No jobs available, block for {}ms", JOB_QUEUE_TIMEOUT_MS);
-        final ActivatedJob job = jobs.poll(JOB_QUEUE_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-        if (job == null) {
-          LOGGER.trace("No jobs available, returning control to caller");
-          return null;
-        }
-
-        activatedJobs.add(job);
-      }
-
-      jobs.drainTo(activatedJobs, maxJobsToActivate - 1);
-      LOGGER.debug("Publishing {} source records", activatedJobs.size());
-      return activatedJobs.stream().map(this::transformJob).collect(Collectors.toList());
+    final List<SourceRecord> records = new ArrayList<>();
+    if (taskState.compareAndSet(TaskState.STARTED, TaskState.POLLING)) {
+      drainQueueBlocking().stream().map(this::transformJob).forEach(records::add);
+      taskState.compareAndSet(TaskState.POLLING, TaskState.STARTED);
     }
 
-    close();
-    return null;
+    // close all resources in case we're already stopped
+    closeIfStopped();
+
+    // poll interface specifies to return null instead of empty
+    if (records.isEmpty()) {
+      return null;
+    }
+
+    LOGGER.debug("Publishing {} source records", records.size());
+    return records;
   }
 
   @Override
   public void stop() {
-    // all resources are closed at the end of poll once not running anymore
-    running.set(false);
+    taskState.updateAndGet(this::closeUnlessPolling);
   }
 
   @Override
@@ -118,8 +117,22 @@ public class ZeebeSourceTask extends SourceTask {
     return VersionInfo.getVersion();
   }
 
+  private void closeIfStopped() {
+    if (taskState.get() == TaskState.STOPPED) {
+      close();
+    }
+  }
+
+  private TaskState closeUnlessPolling(final TaskState currentState) {
+    if (currentState != TaskState.POLLING) {
+      close();
+    }
+
+    return TaskState.STOPPED;
+  }
+
   private void close() {
-    LOGGER.debug("Closing...");
+    LOGGER.debug("Closing resources...");
     workers.forEach(JobWorker::close);
     workers.clear();
 
@@ -127,6 +140,25 @@ public class ZeebeSourceTask extends SourceTask {
       client.close();
       client = null;
     }
+  }
+
+  private List<ActivatedJob> drainQueueBlocking() throws InterruptedException {
+    final List<ActivatedJob> activatedJobs = new ArrayList<>();
+
+    // if no jobs available, block a few seconds until we receive one
+    if (jobs.isEmpty()) {
+      LOGGER.trace("No jobs available, block for {}ms", JOB_QUEUE_TIMEOUT_MS);
+      final ActivatedJob job = jobs.poll(JOB_QUEUE_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+      if (job != null) {
+        activatedJobs.add(job);
+      }
+    }
+
+    if (!activatedJobs.isEmpty()) {
+      jobs.drainTo(activatedJobs, maxJobsToActivate - 1);
+    }
+
+    return activatedJobs;
   }
 
   private ZeebeClient buildClient(final ZeebeSourceConnectorConfig config) {
@@ -163,7 +195,7 @@ public class ZeebeSourceTask extends SourceTask {
   // throw an exception here on invalid jobs
   // should we block until the request is finished?
   private void handleInvalidJob(final JobClient client, final ActivatedJob job) {
-    LOGGER.debug("No topic defined for job {}", job);
+    LOGGER.debug("Failing invalid job: {}", job);
     client
         .newFailCommand(job.getKey())
         .retries(job.getRetries() - 1)
@@ -199,12 +231,24 @@ public class ZeebeSourceTask extends SourceTask {
         .open();
   }
 
-  private void onJobActivated(final JobClient client, final ActivatedJob job) {
+  private void onJobActivated(final JobClient client, final ActivatedJob job)
+      throws InterruptedException {
     if (isJobInvalid(job)) {
       handleInvalidJob(client, job);
     } else {
-      LOGGER.trace("Activated job {}", job);
-      jobs.add(job);
+      LOGGER.trace("Activating job {}", job);
+      try {
+        jobs.put(job);
+        LOGGER.trace("Activated jobs: {}", jobs.size());
+      } catch (final RuntimeException e) {
+        LOGGER.error("Failed to append job {} to jobs queue", job, e);
+      }
     }
+  }
+
+  private enum TaskState {
+    STARTED,
+    POLLING,
+    STOPPED
   }
 }
