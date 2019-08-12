@@ -17,8 +17,8 @@ source:
 sink:
 	curl -X POST -H "Content-Type: application/json" --data @$(SELF_DIR)/sink.json http://localhost:8083/connectors
 
-.PHONY: instance
-instance:
-	@KEY=$(shell read -p "Correlation key: " key; echo $$key); \
+.PHONY: ping
+ping:
+	@KEY=$(or $(KEY), $(shell read -p "Correlation key: " key; echo $$key)); \
 	docker-compose -f $(DOCKER_FILE) exec zeebe \
-	zbctl create instance --variables "{\"name\": \"pong\", \"payload\": {\"foo\": \"bar\"}, \"key\": $$KEY}" ping-pong
+		zbctl create instance --variables "{\"name\": \"pong\", \"payload\": {\"foo\": \"bar\"}, \"key\": $$KEY}" ping-pong

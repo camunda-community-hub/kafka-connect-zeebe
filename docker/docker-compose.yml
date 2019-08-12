@@ -37,7 +37,7 @@ services:
       ZOO_SERVERS: server.1=zookeeper:2888:3888
 
   kafka:
-    image: confluentinc/cp-kafka:5.3.0
+    image: confluentinc/cp-enterprise-kafka:5.3.0
     hostname: kafka
     ports:
       - "9092:9092"
@@ -49,6 +49,9 @@ services:
       KAFKA_BROKER_ID: 1
       KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_METRIC_REPORTERS: "io.confluent.metrics.reporter.ConfluentMetricsReporter"
+      KAFKA_CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: "kafka:19092"
+      KAFKA_CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: "zookeeper:2181"
     depends_on:
       - zookeeper
 
@@ -85,7 +88,7 @@ services:
       CONNECT_INTERNAL_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
       CONNECT_REST_ADVERTISED_HOST_NAME: "connect"
       CONNECT_LOG4J_ROOT_LOGLEVEL: "INFO"
-      CONNECT_LOG4J_LOGGERS: "org.apache.kafka.connect.runtime.rest=WARN,org.reflections=ERROR,io.zeebe.kafka.connect=DEBUG,io.zeebe.client=ERROR"
+      CONNECT_LOG4J_LOGGERS: "org.apache.kafka.connect.runtime.rest=WARN,org.reflections=ERROR,io.zeebe.kafka.connect=TRACE,io.zeebe.client=WARN"
       CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: "1"
       CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: "1"
       CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: "1"
