@@ -114,7 +114,8 @@ Replace the value of the `orderId` variable to change the correlation key.
 Open a separate console, navigate to the root project directory, and run
 
 ```shell
-  mvn exec:java -Dexec.mainClass=io.zeebe.kafka.connect.LoggerWorker -Dexec.classpathScope="test" -Djob.types="payment-requested,payment-confirmed"
+  docker-compose -f docker/docker-compose.yml exec zeebe /bin/bash -c \
+		"zbctl create worker --handler cat --maxJobsActive 1 payment-requested & zbctl create worker --handler cat --maxJobsActive 1 payment-confirmed"
 ```
 
 #### Confirming order (Kafka Producer)
