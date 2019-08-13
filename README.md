@@ -10,11 +10,16 @@ This [Kafka Connect](https://docs.confluent.io/current/connect/index.html) conne
 
 See this [blog post](https://zeebe.io/blog/2018/12/writing-an-apache-kafka-connector-for-zeebe/) for some background on the implementation.
 
-# Examples, installation and quickstart
+# Examples
 
-You can find ready-to-use [examples here](examples).
+**[Examples](examples)**.
 
-On the [examples page](examples) qou will also find information on **how to build the connector** and **how to run Kafka and Zeebe** to get started quickly.
+# Installation and quickstart
+
+You will find information on **how to build the connector** and **how to run Kafka and Zeebe** to get started quickly here:
+
+**[Installation](examples)**
+
 
 # Connectors
 

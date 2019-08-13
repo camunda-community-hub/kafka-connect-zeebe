@@ -1,4 +1,4 @@
-# Flow Retail
+# Microservices Orchestration
 
 This example showcases how Zeebe could orchestrate a payment microservice from within an order fulfillment microservice when Kafka is used as transport.
 
