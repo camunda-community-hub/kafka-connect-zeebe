@@ -1,37 +1,20 @@
 # kafka-connect-zeebe
 
-[Zeebe](https://zeebe.io) Source and sink connectors plugins for [Kafka Connect](https://docs.confluent.io/current/connect/index.html).
+This [Kafka Connect](https://docs.confluent.io/current/connect/index.html) connector for [Zeebe](https://zeebe.io) can do two things:
 
-The Zeebe source connector allows external systems, through Kafka, to process Zeeb service tasks, 
-and the sink connector allows those same external systems to publish the results back to Zeebe.
+* **Send messages to a Kafka topic** when a workflow instance reached a specific activity. Please note that a `message` is more precisly a kafka `record`, which is also often named `event`. This is a **source** in the Kafka Connect speak. 
 
-This allows an existing architecture, comprised of microservices communicating through a Kafka bus,
-to leverage Zeebe to orchestrate your [workflows](https://zeebe.io/blog/2019/06/workflows-are-everywhere/),
-without having to immediately rewrite your core processes.
-
-See this [blog post](https://zeebe.io/blog/2018/12/writing-an-apache-kafka-connector-for-zeebe/) for an introduction.
-
-# Features
-
-* Correlate messages from a Kafka topic with Zeebe workflow instances.
-* Process service tasks from a Zeebe workflow instance by publishing a record to a Kafka topic, 
-  allowing existing Kafka-aware workers to do the actual processing.
+* **Consume messages from a Kafka topic and correlate them to a workflow**. This is a Kafka Connect **sink**.
 
 ![Overview](doc/images/overview.png)
 
-# Installation
+See this [blog post](https://zeebe.io/blog/2018/12/writing-an-apache-kafka-connector-for-zeebe/) for some background on the implementation.
 
-* Build via `mvn package`
-* Find the plugin package under `target/components/packages`, which will be a ZIP file: e.g. `target/components/packages/zeebe-io-kafka-connect-zeebe-1.0.0.zip`
-* Follow the [plugin installation instructions](https://docs.confluent.io/current/connect/managing/install.html#connect-install-connectors)
+# Examples, installation and quickstart
 
-> Alternatively, for development purposes or just to try it out, you can grab the resulting uber JAR and 
-  place it in your [Kafka Connect plugin path](https://docs.confluent.io/current/connect/userguide.html#installing-plugins)
+You can find ready-to-use [examples here](examples).
 
-# Quickstart
-
-You can find a series of examples [here](examples) which should highlight how to use the
-connectors.
+On the [examples page](examples) qou will also find information on **how to build the connector** and **how to run Kafka and Zeebe** to get started quickly.
 
 # Connectors
 
@@ -110,3 +93,13 @@ Set the value of this key to a comma-separated list of variables to pass to Kafk
 If this custom header is not present, then all variables in the scope will be sent to Kafka by default.
 
 ![Filter Variables](doc/images/variables-custom-header.png)
+
+# Confluent Hub
+
+This project is set up to be released on Confluent Hub.
+
+When 
+* Building this project via `mvn package` 
+* You will find the plugin package as ZIP file under `target/components/packages`, e.g. `target/components/packages/zeebe-io-kafka-connect-zeebe-1.0.0.zip`
+* Which can be [installed onto the Confluent Hub](https://docs.confluent.io/current/connect/managing/install.html#connect-install-connectors)
+

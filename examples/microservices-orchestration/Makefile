@@ -7,21 +7,21 @@ flow-retail: workflow source sink
 
 .PHONY: workflow
 workflow:
-	docker cp $(SELF_DIR)/process.bpmn $(shell docker-compose -f $(DOCKER_FILE) ps -q zeebe):/tmp/process.bpmn && \
-	docker-compose -f $(DOCKER_FILE) exec zeebe zbctl deploy /tmp/process.bpmn
+	docker cp $(SELF_DIR)/order.bpmn $(shell docker-compose -f $(DOCKER_FILE) ps -q zeebe):/tmp/order.bpmn && \
+	docker-compose -f $(DOCKER_FILE) exec zeebe zbctl deploy /tmp/order.bpmn
 
 .PHONY: source
 source:
-	curl -X POST -H "Content-Type: application/json" --data @$(SELF_DIR)/source.json http://localhost:8083/connectors
+	curl -X POST -H "Content-Type: application/json" --data @$(SELF_DIR)/payment-source.json http://localhost:8083/connectors
 
 .PHONY: sink
 sink:
-	curl -X POST -H "Content-Type: application/json" --data @$(SELF_DIR)/sink.json http://localhost:8083/connectors
+	curl -X POST -H "Content-Type: application/json" --data @$(SELF_DIR)/payment-sink.json http://localhost:8083/connectors
 
 .PHONY: order
 order:
 	@ORDER_ID=$(or $(ORDER_ID), $(shell read -p "Order ID: " orderId; echo $$orderId)); \
-	docker-compose -f $(DOCKER_FILE) exec zeebe zbctl create instance --variables "{\"orderId\": $$ORDER_ID}" flow-retail
+	docker-compose -f $(DOCKER_FILE) exec zeebe zbctl create instance --variables "{\"orderId\": $$ORDER_ID}" order
 
 .PHONY: logger
 logger:

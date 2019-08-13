@@ -1,23 +1,15 @@
 # Flow Retail
 
-This example showcases how Zeebe could integrate into a micro service architecture
-where Kafka is used as an event bus. Once a workflow instance is created, a service
-task is consumed by the source connector, which publishes a record on a particular topic.
+This example showcases how Zeebe could orchestrate a payment microservice from within an order fulfillment microservice when Kafka is used as transport.
 
-An external service can then consume that record, process it, and publish the results back
-on a different topic which will be processed by the sink connector. The sink connector then
-completes the workflow instance by publishing a message back to Zeebe based on the results
-of the work done by the external system (or systems). 
+![Process](order-microservices-orchestration.png)
 
-![Process](process.png)
 
-> The `Logger` tasks are there mostly for demo purposes to better visualize the flow.
+> The `Logger` tasks are there only demo purposes to follow along on the console.
 
-In this example, we'll be simulating the external payment confirmation process by manually producing
-records to the `payment-confirm` .
+It leverages the connector's source to push a message onto Kafka whenever a payment is required, expecting some payment service to process it and emit an event (or send a response message) later on. This response is correlated to the waiting order fulfillment process using the connectors sink.
 
-To complete the message we will then use the [kafka-console-producer](https://kafka.apache.org/quickstart#quickstart_send),
-producing records of the following format:
+The example needs the payment service to be simulated, means you need to publish a record to the `payment-confirm` topic. You could do that using the [kafka-console-producer](https://kafka.apache.org/quickstart#quickstart_send):
 
 ```json
 {
@@ -30,12 +22,14 @@ producing records of the following format:
 > You can visualize the records published by the source connector using the [kafka-console-consumer](https://kafka.apache.org/quickstart#quickstart_consume)
   or simply Control Center. The records are published on the topic `payment-request`.
 
+## Prerequisites
+
+* Install and run Kafka, Kafka Connect and Zeebe as described [here](https://github.com/zeebe-io/kafka-connect-zeebe/tree/master/examples#setup)
+
 ## Running the example
 
 The simplest way to run through it is to use the provided `Makefile`. If that's not an
 option on your system, then you can run all the steps manually.
-
-Before starting, make sure you already set up everything as listed [here](https://github.com/zeebe-io/kafka-connect-zeebe/tree/master/examples#setup).
 
 ### Makefile
 
@@ -83,20 +77,24 @@ Simply write the expected JSON record, e.g.:
 If `make` is not available on your system (if on Windows, WSL could help there), then you can run
 steps manually:
 
-#### Deploy workflow and connectors
+#### Deploy workflow
+
+
+
+#### Deploy connectors
 
 If `curl` is not available, you can also use [Control Center](http://localhost:9021) to create the connectors.
-Make sure to configure them according to the following properties: [source connector properties](source.json), [sink connector properties](sink.json)
+Make sure to configure them according to the following properties: [source connector properties](source-payment.json), [sink connector properties](sink-payment.json)
 
 Now create the source connector:
 ```shell
-curl -X POST -H "Content-Type: application/json" --data @examples/flow-retail/source.json http://localhost:8083
+curl -X POST -H "Content-Type: application/json" --data @payment-source.json http://localhost:8083
 ```
 
 Next, create the sink connector:
 
 ```
-curl -X POST -H "Content-Type: application/json" --data @examples/flow-retail/source.json http://localhost:8083
+curl -X POST -H "Content-Type: application/json" --data @payment-sink.json http://localhost:8083
 ```
 
 #### Create a workflow instance
@@ -104,7 +102,7 @@ curl -X POST -H "Content-Type: application/json" --data @examples/flow-retail/so
 We can now create a workflow instance:
 
 ```shell
-docker-compose -f docker/docker-compose.yml exec zeebe zbctl create instance --variables "{\"orderId\": 1}" flow-retail
+docker-compose -f docker/docker-compose.yml exec zeebe zbctl create instance --variables "{\"orderId\": 1}" order
 ```
 
 Replace the value of the `orderId` variable to change the correlation key.

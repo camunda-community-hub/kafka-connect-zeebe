@@ -258,10 +258,11 @@
               <title>Kafka Connect Zeebe</title>
               <documentationUrl>https://github.com/zeebe-io/kafka-connect-zeebe/</documentationUrl>
               <description>
-                The Zeebe source connector allows external systems, through Kafka, to process Zeeb
-                service tasks, and the sink connector allows those same external systems to publish
-                the results back to Zeebe. This allows existing processes connected through a Kafka
-                bus to be orchestrated by Zeebe.
+                The Zeebe source connector can push activities, that need to be worked on, onto a Kafka topic. This allows to easily publish new records on Kafka from a BPMN workflow in Zeebe. It implements the BPMN message sending capabilities.
+
+                The sink connector allows to send records from a Kafka topic to Zeebe workflows, leveraging the BPMN message correlation capabilities.
+
+                The connector makes it easy to orchestrate microservices that are connected through Kafka with Zeebe.
               </description>
               <logo>logos/zeebe.png</logo>
 
@@ -284,11 +285,10 @@
               </componentTypes>
 
               <tags>
-                <tag>Zeebe</tag>
                 <tag>zeebe</tag>
                 <tag>camunda</tag>
-                <tag>Camunda</tag>
-                <tag>workflows</tag>
+                <tag>workflow</tag>
+                <tag>workflow automation</tag>
                 <tag>orchestration</tag>
               </tags>
 
