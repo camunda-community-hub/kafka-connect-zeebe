@@ -15,8 +15,7 @@ To run the example you need the following tools on your system:
 
 1. [docker-compose](https://docs.docker.com/compose/) to run Kafka and Zeebe
 1. Java and [maven](https://maven.apache.org/) to build the connector
-
-The [Zeebe Modeler](https://github.com/zeebe-io/zeebe-modeler/releases) is a nice addition to graphically model the Zeebe workflows.
+1. [Zeebe Modeler](https://github.com/zeebe-io/zeebe-modeler/releases) (optional, but it is a nice addition to graphically model the Zeebe workflows)
 
 
 ## Build the connector
@@ -51,12 +50,10 @@ will start:
     - [Zookeeper](https://zookeeper.apache.org/), on port `2081`.
 - [Kafka Schema Registry](https://docs.confluent.io/current/schema-registry/index.html), on port `8081`.
 - [Kafka Connect](https://docs.confluent.io/current/connect/index.html), on port `8083`.
-
-Including monitoring tooling:
-
-- [Operate](https://github.com/zeebe-io/zeebe/releases/tag/0.20.0), a [monitoring tool for Zeebe](https://zeebe.io/blog/2019/04/announcing-operate-visibility-and-problem-solving/), on [port 8080](http://localhost:8080).
-    - Operate has an external dependency on [Elasticsearch](https://www.elastic.co/), which we'll also run on port `9200`.
-- [Confluent Control Center](https://www.confluent.io/confluent-control-center/), on port `9021`. This will be our tool to monitor the Kafka cluster, create connectors, visualize Kafka topics, etc.
+- Monitoring tools
+    - [Operate](https://github.com/zeebe-io/zeebe/releases/tag/0.20.0), a [monitoring tool for Zeebe](https://zeebe.io/blog/2019/04/announcing-operate-visibility-and-problem-solving/), on port `8080`.
+        - Operate has an external dependency on [Elasticsearch](https://www.elastic.co/), which we'll also run on port `9200`.
+    - [Confluent Control Center](https://www.confluent.io/confluent-control-center/), on port `9021`. This will be our tool to monitor the Kafka cluster, create connectors, visualize Kafka topics, etc.
 
 Of course you can customize the Docker Compose file to your needs. This Docker Compose file is also just based on the examples provided by Zeebe and Confluent:
 
@@ -65,4 +62,4 @@ Of course you can customize the Docker Compose file to your needs. This Docker C
 
 ## Running without Docker
 
-of course you can also run without Docker. For development purposes or just to try it out, you can simply grab the  uber JAR after the Maven build and place it in your [Kafka Connect plugin path](https://docs.confluent.io/current/connect/userguide.html#installing-plugins).
+Of course, you can also run without Docker. For development purposes or just to try it out, you can simply grab the  uber JAR after the Maven build and place it in your [Kafka Connect plugin path](https://docs.confluent.io/current/connect/userguide.html#installing-plugins).

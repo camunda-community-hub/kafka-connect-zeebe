@@ -12,13 +12,13 @@ See this [blog post](https://zeebe.io/blog/2018/12/writing-an-apache-kafka-conne
 
 # Examples
 
-**[Examples](examples)**.
+**[Examples](examples)**
 
 # Installation and quickstart
 
 You will find information on **how to build the connector** and **how to run Kafka and Zeebe** to get started quickly here:
 
-**[Installation](examples)**
+**[Installation](examples#setup)**
 
 
 # Connectors
