@@ -21,6 +21,8 @@ import io.zeebe.client.api.command.PublishMessageCommandStep1.PublishMessageComm
 import io.zeebe.kafka.connect.sink.message.JsonRecordParser;
 import io.zeebe.kafka.connect.sink.message.JsonRecordParser.Builder;
 import io.zeebe.kafka.connect.sink.message.Message;
+import io.zeebe.kafka.connect.util.ManagedClient;
+import io.zeebe.kafka.connect.util.ManagedClient.AlreadyClosedException;
 import io.zeebe.kafka.connect.util.VersionInfo;
 import io.zeebe.kafka.connect.util.ZeebeClientConfigDef;
 import java.time.Duration;
@@ -37,13 +39,13 @@ import org.slf4j.LoggerFactory;
 public class ZeebeSinkTask extends SinkTask {
   private static final Logger LOGGER = LoggerFactory.getLogger(ZeebeSinkTask.class);
 
-  private ZeebeClient client;
+  private ManagedClient managedClient;
   private JsonRecordParser parser;
 
   @Override
   public void start(final Map<String, String> props) {
     final ZeebeSinkConnectorConfig config = new ZeebeSinkConnectorConfig(props);
-    client = buildClient(config);
+    managedClient = new ManagedClient(buildClient(config));
     parser = buildParser(config);
   }
 
@@ -51,30 +53,22 @@ public class ZeebeSinkTask extends SinkTask {
   // consequences of doing so are so for now we await all futures
   @Override
   public void put(final Collection<SinkRecord> sinkRecords) {
-    final CompletableFuture[] pendingRequests =
-        sinkRecords
-            .stream()
-            .map(this::prepareRequest)
-            .map(FinalCommandStep::send)
-            .toArray(CompletableFuture[]::new);
-
     try {
-      CompletableFuture.allOf(pendingRequests).join();
+      managedClient.withClient(client -> publishMessages(client, sinkRecords).join());
+      LOGGER.trace("Published {} messages", sinkRecords.size());
     } catch (final CancellationException e) {
       LOGGER.debug("Publish requests cancelled, probably due to task stopping", e);
+    } catch (final AlreadyClosedException e) {
+      LOGGER.debug(
+          "Expected to publish {} messages, but the client is already closed", sinkRecords.size());
     } catch (final Exception e) {
       throw new ConnectException(e);
     }
-
-    LOGGER.trace("Published {} messages", sinkRecords.size());
   }
 
   @Override
   public void stop() {
-    if (client != null) {
-      client.close();
-      client = null;
-    }
+    managedClient.close();
   }
 
   @Override
@@ -82,7 +76,20 @@ public class ZeebeSinkTask extends SinkTask {
     return VersionInfo.getVersion();
   }
 
-  private FinalCommandStep<Void> prepareRequest(final SinkRecord record) {
+  private CompletableFuture<Void> publishMessages(
+      final ZeebeClient client, final Collection<SinkRecord> sinkRecords) {
+    final CompletableFuture[] inFlightRequests =
+        sinkRecords
+            .stream()
+            .map(r -> this.preparePublishRequest(client, r))
+            .map(FinalCommandStep::send)
+            .toArray(CompletableFuture[]::new);
+
+    return CompletableFuture.allOf(inFlightRequests);
+  }
+
+  private FinalCommandStep<Void> preparePublishRequest(
+      final ZeebeClient client, final SinkRecord record) {
     final Message message = parser.parse(record);
     PublishMessageCommandStep3 request =
         client
