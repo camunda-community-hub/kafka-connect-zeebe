@@ -19,6 +19,8 @@ import io.zeebe.client.ZeebeClient;
 import io.zeebe.client.api.response.ActivatedJob;
 import io.zeebe.client.api.worker.JobClient;
 import io.zeebe.client.api.worker.JobWorker;
+import io.zeebe.kafka.connect.util.ManagedClient;
+import io.zeebe.kafka.connect.util.ManagedClient.AlreadyClosedException;
 import io.zeebe.kafka.connect.util.VersionInfo;
 import io.zeebe.kafka.connect.util.ZeebeClientConfigDef;
 import io.zeebe.protocol.Protocol;
@@ -30,8 +32,8 @@ import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.source.SourceRecord;
@@ -45,16 +47,14 @@ public class ZeebeSourceTask extends SourceTask {
   private static final int JOB_QUEUE_TIMEOUT_MS = 5000;
   private static final int JOBS_QUEUE_CAPACITY = 10_000;
 
-  private final AtomicReference<TaskState> taskState;
   private final BlockingQueue<ActivatedJob> jobs;
 
   private String jobHeaderTopic;
-  private ZeebeClient client;
+  private ManagedClient managedClient;
   private List<JobWorker> workers;
   private int maxJobsToActivate;
 
   public ZeebeSourceTask() {
-    this.taskState = new AtomicReference<>(TaskState.STOPPED);
     this.jobs = new ArrayBlockingQueue<>(JOBS_QUEUE_CAPACITY);
   }
 
@@ -62,34 +62,25 @@ public class ZeebeSourceTask extends SourceTask {
   public void start(final Map<String, String> props) {
     final ZeebeSourceConnectorConfig config = new ZeebeSourceConnectorConfig(props);
     final List<String> jobTypes = config.getList(ZeebeSourceConnectorConfig.JOB_TYPES_CONFIG);
+    final ZeebeClient client = buildClient(config);
 
     maxJobsToActivate = config.getInt(ZeebeSourceConnectorConfig.MAX_JOBS_TO_ACTIVATE_CONFIG);
-    client = buildClient(config);
+    managedClient = new ManagedClient(client);
     workers =
-        jobTypes.stream().map(type -> this.newWorker(config, type)).collect(Collectors.toList());
-
-    if (!taskState.compareAndSet(TaskState.STOPPED, TaskState.STARTED)) {
-      throw new IllegalArgumentException(
-          String.format(
-              "Expected task to be stopped before start() is called, but current state is '%s'",
-              taskState.get()));
-    }
+        jobTypes.stream()
+            .map(type -> this.newWorker(config, type, client))
+            .collect(Collectors.toList());
   }
 
   @SuppressWarnings("squid:S1168")
   @Override
   public List<SourceRecord> poll() throws InterruptedException {
-    final List<SourceRecord> records = new ArrayList<>();
-    if (taskState.compareAndSet(TaskState.STARTED, TaskState.POLLING)) {
-      drainQueueBlocking().stream().map(this::transformJob).forEach(records::add);
-      taskState.compareAndSet(TaskState.POLLING, TaskState.STARTED);
-    }
-
-    // close all resources in case we're already stopped
-    closeIfStopped();
+    final List<SourceRecord> records =
+        drainQueueBlocking().stream().map(this::transformJob).collect(Collectors.toList());
 
     // poll interface specifies to return null instead of empty
     if (records.isEmpty()) {
+      LOGGER.trace("Nothing to publish, returning control to caller");
       return null;
     }
 
@@ -99,16 +90,20 @@ public class ZeebeSourceTask extends SourceTask {
 
   @Override
   public void stop() {
-    taskState.updateAndGet(this::closeUnlessPolling);
+    workers.forEach(JobWorker::close);
+    workers.clear();
+    managedClient.close();
   }
 
   @Override
   public void commitRecord(final SourceRecord record) throws InterruptedException {
     final long key = (Long) record.sourceOffset().get("key");
     try {
-      client.newCompleteCommand(key).send().join();
+      managedClient.withClient(c -> c.newCompleteCommand(key).send().join());
     } catch (final CancellationException e) {
       LOGGER.debug("Complete command cancelled probably because task is stopping", e);
+    } catch (final AlreadyClosedException e) {
+      LOGGER.debug("Expected to complete job {}, but client is already closed", key);
     }
   }
 
@@ -117,44 +112,21 @@ public class ZeebeSourceTask extends SourceTask {
     return VersionInfo.getVersion();
   }
 
-  private void closeIfStopped() {
-    if (taskState.get() == TaskState.STOPPED) {
-      close();
-    }
-  }
-
-  private TaskState closeUnlessPolling(final TaskState currentState) {
-    if (currentState != TaskState.POLLING) {
-      close();
-    }
-
-    return TaskState.STOPPED;
-  }
-
-  private void close() {
-    LOGGER.debug("Closing resources...");
-    workers.forEach(JobWorker::close);
-    workers.clear();
-
-    if (client != null) {
-      client.close();
-      client = null;
-    }
-  }
-
   private List<ActivatedJob> drainQueueBlocking() throws InterruptedException {
     final List<ActivatedJob> activatedJobs = new ArrayList<>();
+    boolean jobsAvailable = !jobs.isEmpty();
 
     // if no jobs available, block a few seconds until we receive one
-    if (jobs.isEmpty()) {
+    if (!jobsAvailable) {
       LOGGER.trace("No jobs available, block for {}ms", JOB_QUEUE_TIMEOUT_MS);
       final ActivatedJob job = jobs.poll(JOB_QUEUE_TIMEOUT_MS, TimeUnit.MILLISECONDS);
       if (job != null) {
         activatedJobs.add(job);
+        jobsAvailable = true;
       }
     }
 
-    if (!activatedJobs.isEmpty()) {
+    if (jobsAvailable) {
       jobs.drainTo(activatedJobs, maxJobsToActivate - 1);
     }
 
@@ -186,27 +158,8 @@ public class ZeebeSourceTask extends SourceTask {
         job.toJson());
   }
 
-  private boolean isJobInvalid(final ActivatedJob job) {
-    final String topic = job.getCustomHeaders().get(jobHeaderTopic);
-    return topic == null || topic.isEmpty();
-  }
-
-  // eventually allow this behaviour here to be configurable: whether to ignore, fail, or
-  // throw an exception here on invalid jobs
-  // should we block until the request is finished?
-  private void handleInvalidJob(final JobClient client, final ActivatedJob job) {
-    LOGGER.debug("Failing invalid job: {}", job);
-    client
-        .newFailCommand(job.getKey())
-        .retries(job.getRetries() - 1)
-        .errorMessage(
-            String.format(
-                "Expected a kafka topic to be defined as a custom header with key '%s', but none found",
-                jobHeaderTopic))
-        .send();
-  }
-
-  private JobWorker newWorker(final ZeebeSourceConnectorConfig config, final String type) {
+  private JobWorker newWorker(
+      final ZeebeSourceConnectorConfig config, final String type, final ZeebeClient client) {
     jobHeaderTopic = config.getString(ZeebeSourceConnectorConfig.JOB_HEADER_TOPICS_CONFIG);
     final List<String> jobVariables =
         config.getList(ZeebeSourceConnectorConfig.JOB_VARIABLES_CONFIG);
@@ -231,10 +184,30 @@ public class ZeebeSourceTask extends SourceTask {
         .open();
   }
 
+  private boolean isJobInvalid(final ActivatedJob job) {
+    final String topic = job.getCustomHeaders().get(jobHeaderTopic);
+    return topic == null || topic.isEmpty();
+  }
+
+  // eventually allow this behaviour here to be configurable: whether to ignore, fail, or
+  // throw an exception here on invalid jobs
+  // should we block until the request is finished?
+  private Future<Void> handleInvalidJob(final JobClient client, final ActivatedJob job) {
+    LOGGER.debug("Failing invalid job: {}", job);
+    return client
+        .newFailCommand(job.getKey())
+        .retries(job.getRetries() - 1)
+        .errorMessage(
+            String.format(
+                "Expected a kafka topic to be defined as a custom header with key '%s', but none found",
+                jobHeaderTopic))
+        .send();
+  }
+
   private void onJobActivated(final JobClient client, final ActivatedJob job)
-      throws InterruptedException {
+      throws InterruptedException, AlreadyClosedException {
     if (isJobInvalid(job)) {
-      handleInvalidJob(client, job);
+      managedClient.withClient(c -> handleInvalidJob(c, job));
     } else {
       LOGGER.trace("Activating job {}", job);
       try {
@@ -244,11 +217,5 @@ public class ZeebeSourceTask extends SourceTask {
         LOGGER.error("Failed to append job {} to jobs queue", job, e);
       }
     }
-  }
-
-  private enum TaskState {
-    STARTED,
-    POLLING,
-    STOPPED
   }
 }
