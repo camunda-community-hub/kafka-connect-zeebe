@@ -24,6 +24,7 @@ import org.apache.kafka.common.config.ConfigDef.Width;
 public final class ZeebeClientConfigDef {
   public static final String BROKER_CONTACTPOINT_CONFIG = ClientProperties.BROKER_CONTACTPOINT;
   public static final String REQUEST_TIMEOUT_CONFIG = ClientProperties.DEFAULT_REQUEST_TIMEOUT;
+  public static final String USE_PLAINTEXT_CONFIG = ClientProperties.USE_PLAINTEXT_CONNECTION;
 
   private static final String CLIENT_CONFIG_GROUP = "Zeebe Client";
   private static final String BROKER_CONTACTPOINT_DEFAULT = "localhost:26500";
@@ -32,6 +33,9 @@ public final class ZeebeClientConfigDef {
   private static final long REQUEST_TIMEOUT_DEFAULT = 10_000;
   private static final String REQUEST_TIMEOUT_DOC =
       "How long to wait before a request to the broker is timed out";
+  private static final boolean USE_PLAINTEXT_DEFAULT = false;
+  private static final String USE_PLAINTEXT_DOC =
+      "Disable secure connection to gateway for the Zeebe client";
 
   private ZeebeClientConfigDef() {}
 
@@ -58,6 +62,16 @@ public final class ZeebeClientConfigDef {
             CLIENT_CONFIG_GROUP,
             ++order,
             Width.SHORT,
-            "Request timeout");
+            "Request timeout")
+        .define(
+            USE_PLAINTEXT_CONFIG,
+            Type.BOOLEAN,
+            USE_PLAINTEXT_DEFAULT,
+            Importance.LOW,
+            USE_PLAINTEXT_DOC,
+            CLIENT_CONFIG_GROUP,
+            ++order,
+            Width.SHORT,
+            "Use plaintext connection");
   }
 }

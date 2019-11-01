@@ -16,6 +16,7 @@
 package io.zeebe.kafka.connect.source;
 
 import io.zeebe.client.ZeebeClient;
+import io.zeebe.client.ZeebeClientBuilder;
 import io.zeebe.client.api.response.ActivatedJob;
 import io.zeebe.client.api.worker.JobClient;
 import io.zeebe.client.api.worker.JobWorker;
@@ -134,10 +135,16 @@ public class ZeebeSourceTask extends SourceTask {
   }
 
   private ZeebeClient buildClient(final ZeebeSourceConnectorConfig config) {
-    return ZeebeClient.newClientBuilder()
-        .brokerContactPoint(config.getString(ZeebeClientConfigDef.BROKER_CONTACTPOINT_CONFIG))
-        .numJobWorkerExecutionThreads(1)
-        .build();
+    final ZeebeClientBuilder zeebeClientBuilder =
+        ZeebeClient.newClientBuilder()
+            .brokerContactPoint(config.getString(ZeebeClientConfigDef.BROKER_CONTACTPOINT_CONFIG))
+            .numJobWorkerExecutionThreads(1);
+
+    if (config.getBoolean(ZeebeClientConfigDef.USE_PLAINTEXT_CONFIG)) {
+      zeebeClientBuilder.usePlaintext();
+    }
+
+    return zeebeClientBuilder.build();
   }
 
   private SourceRecord transformJob(final ActivatedJob job) {
