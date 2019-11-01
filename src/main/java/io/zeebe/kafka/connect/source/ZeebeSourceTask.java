@@ -67,7 +67,8 @@ public class ZeebeSourceTask extends SourceTask {
     maxJobsToActivate = config.getInt(ZeebeSourceConnectorConfig.MAX_JOBS_TO_ACTIVATE_CONFIG);
     managedClient = new ManagedClient(client);
     workers =
-        jobTypes.stream()
+        jobTypes
+            .stream()
             .map(type -> this.newWorker(config, type, client))
             .collect(Collectors.toList());
   }

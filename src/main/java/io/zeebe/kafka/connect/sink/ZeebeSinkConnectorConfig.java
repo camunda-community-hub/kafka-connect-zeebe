@@ -24,6 +24,8 @@ import org.apache.kafka.common.config.ConfigDef.Type;
 import org.apache.kafka.common.config.ConfigDef.Width;
 
 public class ZeebeSinkConnectorConfig extends AbstractConfig {
+  public static final ConfigDef DEFINITIONS = defineConfiguration();
+
   static final String MESSAGE_PATH_KEY_CONFIG = "message.path.correlationKey";
   static final String MESSAGE_PATH_NAME_CONFIG = "message.path.messageName";
   static final String MESSAGE_PATH_TTL_CONFIG = "message.path.timeToLive";
@@ -42,8 +44,6 @@ public class ZeebeSinkConnectorConfig extends AbstractConfig {
   private static final String MESSAGE_PATH_VARIABLES_DEFAULT = "variables";
   private static final String MESSAGE_PATH_VARIABLES_DOC =
       "JSON path expression to extract message variables";
-
-  public static final ConfigDef DEFINITIONS = defineConfiguration();
 
   public ZeebeSinkConnectorConfig(final Map<String, String> properties) {
     super(DEFINITIONS, properties);
