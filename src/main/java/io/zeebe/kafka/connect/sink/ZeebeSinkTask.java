@@ -83,7 +83,8 @@ public class ZeebeSinkTask extends SinkTask {
         sinkRecords
             .stream()
             .map(r -> this.preparePublishRequest(client, r))
-            .map(FinalCommandStep::send)
+            .map(ZeebeSinkFuture::new)
+            .map(ZeebeSinkFuture::executeAsync)
             .toArray(CompletableFuture[]::new);
 
     return CompletableFuture.allOf(inFlightRequests);
