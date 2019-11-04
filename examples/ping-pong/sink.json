@@ -10,6 +10,7 @@
     "topics": "pong",
     "zeebe.client.broker.contactPoint": "zeebe:26500",
     "zeebe.client.requestTimeout": "10000",
+    "zeebe.client.security.plaintext": true,
     "message.path.messageName": "$.variablesAsMap.name",
     "message.path.correlationKey": "$.variablesAsMap.key",
     "message.path.variables": "$.variablesAsMap.payload",

@@ -16,6 +16,7 @@
 package io.zeebe.kafka.connect.source;
 
 import io.zeebe.client.ZeebeClient;
+import io.zeebe.client.ZeebeClientBuilder;
 import io.zeebe.client.api.response.ActivatedJob;
 import io.zeebe.client.api.worker.JobClient;
 import io.zeebe.client.api.worker.JobWorker;
@@ -23,7 +24,6 @@ import io.zeebe.kafka.connect.util.ManagedClient;
 import io.zeebe.kafka.connect.util.ManagedClient.AlreadyClosedException;
 import io.zeebe.kafka.connect.util.VersionInfo;
 import io.zeebe.kafka.connect.util.ZeebeClientConfigDef;
-import io.zeebe.protocol.Protocol;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -67,7 +67,8 @@ public class ZeebeSourceTask extends SourceTask {
     maxJobsToActivate = config.getInt(ZeebeSourceConnectorConfig.MAX_JOBS_TO_ACTIVATE_CONFIG);
     managedClient = new ManagedClient(client);
     workers =
-        jobTypes.stream()
+        jobTypes
+            .stream()
             .map(type -> this.newWorker(config, type, client))
             .collect(Collectors.toList());
   }
@@ -134,16 +135,22 @@ public class ZeebeSourceTask extends SourceTask {
   }
 
   private ZeebeClient buildClient(final ZeebeSourceConnectorConfig config) {
-    return ZeebeClient.newClientBuilder()
-        .brokerContactPoint(config.getString(ZeebeClientConfigDef.BROKER_CONTACTPOINT_CONFIG))
-        .numJobWorkerExecutionThreads(1)
-        .build();
+    final ZeebeClientBuilder zeebeClientBuilder =
+        ZeebeClient.newClientBuilder()
+            .brokerContactPoint(config.getString(ZeebeClientConfigDef.BROKER_CONTACTPOINT_CONFIG))
+            .numJobWorkerExecutionThreads(1);
+
+    if (config.getBoolean(ZeebeClientConfigDef.USE_PLAINTEXT_CONFIG)) {
+      zeebeClientBuilder.usePlaintext();
+    }
+
+    return zeebeClientBuilder.build();
   }
 
   private SourceRecord transformJob(final ActivatedJob job) {
     final String topic = job.getCustomHeaders().get(jobHeaderTopic);
     final Map<String, Integer> sourcePartition =
-        Collections.singletonMap("partitionId", Protocol.decodePartitionId(job.getKey()));
+        Collections.singletonMap("partitionId", decodePartitionId(job.getKey()));
     // a better sourceOffset would be the position but we don't have it here unfortunately
     // key is however a monotonically increasing value, so in a sense it can provide a good
     // approximation of an offset
@@ -217,5 +224,11 @@ public class ZeebeSourceTask extends SourceTask {
         LOGGER.error("Failed to append job {} to jobs queue", job, e);
       }
     }
+  }
+
+  // Copied from Zeebe Protocol as it is currently fixed to Java 11, and the connector to Java 8
+  // Should be fixed eventually and we can use the protocol directly again
+  private int decodePartitionId(final long key) {
+    return (int) (key >> 51);
   }
 }

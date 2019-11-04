@@ -25,6 +25,7 @@ import org.apache.kafka.common.config.ConfigDef.Type;
 import org.apache.kafka.common.config.ConfigDef.Width;
 
 public class ZeebeSourceConnectorConfig extends AbstractConfig {
+  public static final ConfigDef DEFINITIONS = createDefinitions();
   public static final String JOB_TYPES_CONFIG = "job.types";
   static final String WORKER_NAME_CONFIG = ClientProperties.DEFAULT_JOB_WORKER_NAME;
   static final String MAX_JOBS_TO_ACTIVATE_CONFIG = ClientProperties.JOB_WORKER_MAX_JOBS_ACTIVE;
@@ -32,7 +33,6 @@ public class ZeebeSourceConnectorConfig extends AbstractConfig {
   static final String JOB_TIMEOUT_CONFIG = ClientProperties.DEFAULT_JOB_TIMEOUT;
   static final String JOB_HEADER_TOPICS_CONFIG = "job.header.topics";
   static final String JOB_VARIABLES_CONFIG = "job.variables";
-
   private static final String WORKER_CONFIG_GROUP = "Job Worker";
   private static final String WORKER_NAME_DEFAULT = "kafka-connector";
   private static final String WORKER_NAME_DOC = "Name of the Zeebe worker that will poll jobs";
@@ -57,7 +57,6 @@ public class ZeebeSourceConnectorConfig extends AbstractConfig {
   private static final String JOB_VARIABLES_DOC =
       "A comma-separated list of variables to fetch when activating a job. If none given, then "
           + "all variables are fetched.";
-  public static final ConfigDef DEFINITIONS = createDefinitions();
 
   public ZeebeSourceConnectorConfig(final Map<String, String> properties) {
     super(DEFINITIONS, properties);

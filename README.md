@@ -2,7 +2,7 @@
 
 This [Kafka Connect](https://docs.confluent.io/current/connect/index.html) connector for [Zeebe](https://zeebe.io) can do two things:
 
-* **Send messages to a Kafka topic** when a workflow instance reached a specific activity. Please note that a `message` is more precisly a kafka `record`, which is also often named `event`. This is a **source** in the Kafka Connect speak. 
+* **Send messages to a Kafka topic** when a workflow instance reached a specific activity. Please note that a `message` is more precisly a kafka `record`, which is also often named `event`. This is a **source** in the Kafka Connect speak.
 
 * **Consume messages from a Kafka topic and correlate them to a workflow**. This is a Kafka Connect **sink**.
 
@@ -23,7 +23,7 @@ You will find information on **how to build the connector** and **how to run Kaf
 
 # Connectors
 
-The plugin comes with two connectors, a source and a sink connector. 
+The plugin comes with two connectors, a source and a sink connector.
 
 The source connector activates Zeebe jobs, publishes them as Kafka records, and completes them once they have been committed to Kafka.
 
@@ -32,10 +32,10 @@ The source connector activates Zeebe jobs, publishes them as Kafka records, and 
 In a workflow model you can wait for certain events by name (extracted from the payload by messageNameJsonPath):
 
 ![Overview](doc/images/sink-example.png)
- 
+
 The sink connector consumes Kafka records and publishes messages constructed from those records to Zeebe.
 This uses the [Zeebe Message Correlation](https://docs.zeebe.io/reference/message-correlation.html) features.
-So for example if no matching workflow instance is found, the message is buffered for its time-to-live (TTL) and then discarded. 
+So for example if no matching workflow instance is found, the message is buffered for its time-to-live (TTL) and then discarded.
 You could simply ingest all messages from a Kafka topic and check if they correlate to something in Zeebe.
 
 ### Configuration
@@ -44,8 +44,9 @@ In order to communicate with Zeebe, the connector has to create a Zeebe client, 
 
 - `zeebe.client.broker.contactPoint`: the Zeebe broker address, specified as `host:port`; defaults to `localhost:26500`
 - `zeebe.client.requestTimeout`: timeout in milliseconds for requests to the Zeebe broker; defaults to `10000` (or 10 seconds)
+- `zeebe.client.security.plaintext`: disable secure connections to the gateway for local development setups
 
-> For client and job worker configuration, we reuse the system properties as used by Zeebe, so if you already have a properties file 
+> For client and job worker configuration, we reuse the system properties as used by Zeebe, so if you already have a properties file
   for those they should simply work.
 
 The connector does not yet support [schemas](https://docs.confluent.io/current/schema-registry/connect.html), and currently expect
@@ -78,9 +79,9 @@ In order to communicate with Zeebe, the connector has to create a Zeebe client, 
 - `zeebe.client.broker.contactPoint`: the Zeebe broker address, specified as `host:port`; defaults to `localhost:26500`
 - `zeebe.client.requestTimeout`: timeout in milliseconds for requests to the Zeebe broker; defaults to `10000` (or 10 seconds)
 
-> For client and job worker configuration, we reuse the system properties as used by Zeebe, so if you already have a properties file 
+> For client and job worker configuration, we reuse the system properties as used by Zeebe, so if you already have a properties file
   for those they should simply work.
-  
+
 - `zeebe.client.worker.maxJobsActive`: the maximum number of jobs that the worker can activate in a single request; defaults to `100`
 - `zeebe.client.job.worker`: the worker name; defaults to `kafka-connector`
 - `zeebe.client.job.timeout`: how long before a job activated by the worker is made activatable again to others, in milliseconds; defaults to `5000` (or 5 seconds)
@@ -103,8 +104,8 @@ If this custom header is not present, then all variables in the scope will be se
 
 This project is set up to be released on Confluent Hub.
 
-When 
-* Building this project via `mvn package` 
+When
+* Building this project via `mvn package`
 * You will find the plugin package as ZIP file under `target/components/packages`, e.g. `target/components/packages/zeebe-io-kafka-connect-zeebe-1.0.0.zip`
 * Which can be [installed onto the Confluent Hub](https://docs.confluent.io/current/connect/managing/install.html#connect-install-connectors)
 

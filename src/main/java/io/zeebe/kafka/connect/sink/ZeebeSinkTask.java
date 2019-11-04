@@ -16,6 +16,7 @@
 package io.zeebe.kafka.connect.sink;
 
 import io.zeebe.client.ZeebeClient;
+import io.zeebe.client.ZeebeClientBuilder;
 import io.zeebe.client.api.command.FinalCommandStep;
 import io.zeebe.client.api.command.PublishMessageCommandStep1.PublishMessageCommandStep3;
 import io.zeebe.kafka.connect.sink.message.JsonRecordParser;
@@ -82,7 +83,8 @@ public class ZeebeSinkTask extends SinkTask {
         sinkRecords
             .stream()
             .map(r -> this.preparePublishRequest(client, r))
-            .map(FinalCommandStep::send)
+            .map(ZeebeSinkFuture::new)
+            .map(ZeebeSinkFuture::executeAsync)
             .toArray(CompletableFuture[]::new);
 
     return CompletableFuture.allOf(inFlightRequests);
@@ -113,10 +115,16 @@ public class ZeebeSinkTask extends SinkTask {
   private ZeebeClient buildClient(final ZeebeSinkConnectorConfig config) {
     final long requestTimeoutMs = config.getLong(ZeebeClientConfigDef.REQUEST_TIMEOUT_CONFIG);
 
-    return ZeebeClient.newClientBuilder()
-        .brokerContactPoint(config.getString(ZeebeClientConfigDef.BROKER_CONTACTPOINT_CONFIG))
-        .defaultRequestTimeout(Duration.ofMillis(requestTimeoutMs))
-        .build();
+    final ZeebeClientBuilder zeebeClientBuilder =
+        ZeebeClient.newClientBuilder()
+            .brokerContactPoint(config.getString(ZeebeClientConfigDef.BROKER_CONTACTPOINT_CONFIG))
+            .defaultRequestTimeout(Duration.ofMillis(requestTimeoutMs));
+
+    if (config.getBoolean(ZeebeClientConfigDef.USE_PLAINTEXT_CONFIG)) {
+      zeebeClientBuilder.usePlaintext();
+    }
+
+    return zeebeClientBuilder.build();
   }
 
   private JsonRecordParser buildParser(final ZeebeSinkConnectorConfig config) {

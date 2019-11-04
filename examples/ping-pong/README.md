@@ -10,7 +10,7 @@ source connector `ping`, which will publish a record on the topic `pong`. That r
 the job key as its key, and as value the job itself serialized to JSON.
 
 The `pong` sink connector will consume records from the `pong` topic, and publish a message to
-its Zeebe broker. For example, given the following record published to `pong` on partition 1, 
+its Zeebe broker. For example, given the following record published to `pong` on partition 1,
 at offset 1, and with the following value:
 
 ```json
@@ -69,13 +69,13 @@ make workflow source sink
 To create the instance, run:
 
 ```shell
-make instance
+make ping
 ```
 ### Manually
 
 If `make` is not available on your system then you can run steps manually:
 
-#### Deploy workflow 
+#### Deploy workflow
 
 ```shell
 docker-compose -f docker/docker-compose.yml exec zeebe \
