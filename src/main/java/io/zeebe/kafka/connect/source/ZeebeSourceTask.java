@@ -45,18 +45,14 @@ import org.slf4j.LoggerFactory;
 public class ZeebeSourceTask extends SourceTask {
   private static final Logger LOGGER = LoggerFactory.getLogger(ZeebeSourceTask.class);
   private static final int JOB_QUEUE_TIMEOUT_MS = 5000;
-  private static final int JOBS_QUEUE_CAPACITY = 10_000;
-
-  private final BlockingQueue<ActivatedJob> jobs;
 
   private String jobHeaderTopic;
   private ManagedClient managedClient;
   private List<JobWorker> workers;
   private int maxJobsToActivate;
+  private BlockingQueue<ActivatedJob> jobs;
 
-  public ZeebeSourceTask() {
-    this.jobs = new ArrayBlockingQueue<>(JOBS_QUEUE_CAPACITY);
-  }
+  public ZeebeSourceTask() {}
 
   @Override
   public void start(final Map<String, String> props) {
@@ -65,6 +61,8 @@ public class ZeebeSourceTask extends SourceTask {
     final ZeebeClient client = buildClient(config);
 
     maxJobsToActivate = config.getInt(ZeebeSourceConnectorConfig.MAX_JOBS_TO_ACTIVATE_CONFIG);
+    jobs = new ArrayBlockingQueue<>(maxJobsToActivate * jobTypes.size());
+
     managedClient = new ManagedClient(client);
     workers =
         jobTypes
