@@ -100,6 +100,10 @@ If this custom header is not present, then all variables in the scope will be se
 
 ![Filter Variables](doc/images/variables-custom-header.png)
 
+## Configuring Error Handling of Kafka Connect, e.g. Logging or Dead Letter Queues
+
+Kafka Connect allows you to configure what happens if a message cannot be processed. A great explanation can be found in [Kafka Connect Deep Dive – Error Handling and Dead Letter Queues](https://www.confluent.io/blog/kafka-connect-deep-dive-error-handling-dead-letter-queues). This of course also applies to this connector.
+
 # Confluent Hub
 
 This project is set up to be released on Confluent Hub.
