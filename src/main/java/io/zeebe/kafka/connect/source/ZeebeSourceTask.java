@@ -18,23 +18,19 @@ package io.zeebe.kafka.connect.source;
 import io.zeebe.client.ZeebeClient;
 import io.zeebe.client.ZeebeClientBuilder;
 import io.zeebe.client.api.response.ActivatedJob;
-import io.zeebe.client.api.worker.JobClient;
-import io.zeebe.client.api.worker.JobWorker;
 import io.zeebe.kafka.connect.util.ManagedClient;
 import io.zeebe.kafka.connect.util.ManagedClient.AlreadyClosedException;
 import io.zeebe.kafka.connect.util.VersionInfo;
 import io.zeebe.kafka.connect.util.ZeebeClientConfigDef;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.source.SourceRecord;
 import org.apache.kafka.connect.source.SourceTask;
@@ -43,93 +39,130 @@ import org.slf4j.LoggerFactory;
 
 /** Source task for Zeebe which activates jobs, publishes results, and completes jobs */
 public class ZeebeSourceTask extends SourceTask {
-  private static final Logger LOGGER = LoggerFactory.getLogger(ZeebeSourceTask.class);
-  private static final int JOB_QUEUE_TIMEOUT_MS = 5000;
+  static final Logger LOGGER = LoggerFactory.getLogger(ZeebeSourceTask.class);
 
-  private String jobHeaderTopic;
   private ManagedClient managedClient;
-  private List<JobWorker> workers;
+
   private int maxJobsToActivate;
-  private BlockingQueue<ActivatedJob> jobs;
+  private String jobHeaderTopic;
+
+  private ZeebeSourceTaskBackoff backoff;
+
+  private Map<String, Integer> pendingJobCounts;
+  private Map<Long, String> pendingJobTypes;
+  private ZeebeSourcePoller poller;
 
   public ZeebeSourceTask() {}
 
   @Override
   public void start(final Map<String, String> props) {
     final ZeebeSourceConnectorConfig config = new ZeebeSourceConnectorConfig(props);
-    final List<String> jobTypes = config.getList(ZeebeSourceConnectorConfig.JOB_TYPES_CONFIG);
+
     final ZeebeClient client = buildClient(config);
+    managedClient = new ManagedClient(client);
 
     maxJobsToActivate = config.getInt(ZeebeSourceConnectorConfig.MAX_JOBS_TO_ACTIVATE_CONFIG);
-    jobs = new ArrayBlockingQueue<>(maxJobsToActivate * jobTypes.size());
+    jobHeaderTopic = config.getString(ZeebeSourceConnectorConfig.JOB_HEADER_TOPICS_CONFIG);
+    final Duration pollInterval =
+        Duration.ofMillis(config.getLong(ZeebeSourceConnectorConfig.POLL_INTERVAL_CONFIG));
 
-    managedClient = new ManagedClient(client);
-    workers =
-        jobTypes
-            .stream()
-            .map(type -> this.newWorker(config, type, client))
-            .collect(Collectors.toList());
+    backoff = new ZeebeSourceTaskBackoff(10, pollInterval.toMillis());
+
+    final List<String> jobTypes = config.getList(ZeebeSourceConnectorConfig.JOB_TYPES_CONFIG);
+    pendingJobCounts =
+        jobTypes.stream().collect(Collectors.toConcurrentMap(Function.identity(), t -> 0));
+    pendingJobTypes = new ConcurrentHashMap<>();
+
+    poller = new ZeebeSourcePoller(config);
   }
 
   @SuppressWarnings("squid:S1168")
   @Override
   public List<SourceRecord> poll() throws InterruptedException {
+    if (!hasCapacity()) {
+      LOGGER.trace("No capacity left to poll new jobs, returning control to caller after backoff");
+      backoff.backoffAndIncrement();
+      return null;
+    }
+
+    LOGGER.trace("Polling for new jobs");
     final List<SourceRecord> records =
-        drainQueueBlocking().stream().map(this::transformJob).collect(Collectors.toList());
+        pendingJobCounts
+            .keySet()
+            .stream()
+            .flatMap(this::poll)
+            .map(this::registerJob)
+            .map(this::transformJob)
+            .collect(Collectors.toList());
 
     // poll interface specifies to return null instead of empty
     if (records.isEmpty()) {
+      backoff.backoffAndIncrement();
       LOGGER.trace("Nothing to publish, returning control to caller");
       return null;
     }
+
+    backoff.reset();
 
     LOGGER.debug("Publishing {} source records", records.size());
     return records;
   }
 
+  private boolean hasCapacity() {
+    return pendingJobCounts.values().stream().anyMatch(v -> v < maxJobsToActivate);
+  }
+
+  private Stream<ActivatedJob> poll(final String jobType) {
+    final int jobsToActivate = maxJobsToActivate - pendingJobCounts.get(jobType);
+
+    if (jobsToActivate > 0) {
+      try {
+        final long requestTimeout = backoff.getBackoffInMs();
+        final List<ActivatedJob> activatedJobs =
+            managedClient.withClient(c -> poller.poll(c, jobType, jobsToActivate, requestTimeout));
+        return activatedJobs.stream();
+      } catch (final AlreadyClosedException | InterruptedException e) {
+        // ignore
+      }
+    }
+
+    return Stream.empty();
+  }
+
   @Override
   public void stop() {
-    workers.forEach(JobWorker::close);
-    workers.clear();
     managedClient.close();
   }
 
   @Override
-  public void commitRecord(final SourceRecord record) throws InterruptedException {
+  public void commit() {
+    pendingJobTypes.keySet().stream().map(this::unregisterJob).forEach(this::completeJob);
+  }
+
+  @Override
+  public void commitRecord(final SourceRecord record) {
     final long key = (Long) record.sourceOffset().get("key");
+    unregisterJob(key);
+    completeJob(key);
+  }
+
+  private void completeJob(final long key) {
     try {
-      managedClient.withClient(c -> c.newCompleteCommand(key).send().join());
+      managedClient.withClient(c -> c.newCompleteCommand(key).send());
     } catch (final CancellationException e) {
       LOGGER.debug("Complete command cancelled probably because task is stopping", e);
     } catch (final AlreadyClosedException e) {
       LOGGER.debug("Expected to complete job {}, but client is already closed", key);
+    } catch (final InterruptedException e) {
+      LOGGER.debug("Interrupted while completing job {}", key);
+    } finally {
+      backoff.reset();
     }
   }
 
   @Override
   public String version() {
     return VersionInfo.getVersion();
-  }
-
-  private List<ActivatedJob> drainQueueBlocking() throws InterruptedException {
-    final List<ActivatedJob> activatedJobs = new ArrayList<>();
-    boolean jobsAvailable = !jobs.isEmpty();
-
-    // if no jobs available, block a few seconds until we receive one
-    if (!jobsAvailable) {
-      LOGGER.trace("No jobs available, block for {}ms", JOB_QUEUE_TIMEOUT_MS);
-      final ActivatedJob job = jobs.poll(JOB_QUEUE_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-      if (job != null) {
-        activatedJobs.add(job);
-        jobsAvailable = true;
-      }
-    }
-
-    if (jobsAvailable) {
-      jobs.drainTo(activatedJobs, maxJobsToActivate - 1);
-    }
-
-    return activatedJobs;
   }
 
   private ZeebeClient buildClient(final ZeebeSourceConnectorConfig config) {
@@ -143,6 +176,18 @@ public class ZeebeSourceTask extends SourceTask {
     }
 
     return zeebeClientBuilder.build();
+  }
+
+  private ActivatedJob registerJob(final ActivatedJob job) {
+    pendingJobTypes.put(job.getKey(), job.getType());
+    pendingJobCounts.merge(job.getType(), 0, (k, v) -> v + 1);
+    return job;
+  }
+
+  private long unregisterJob(final long key) {
+    final String jobType = pendingJobTypes.remove(key);
+    pendingJobCounts.merge(jobType, 1, (k, v) -> v - 1);
+    return key;
   }
 
   private SourceRecord transformJob(final ActivatedJob job) {
@@ -161,67 +206,6 @@ public class ZeebeSourceTask extends SourceTask {
         job.getKey(),
         Schema.STRING_SCHEMA,
         job.toJson());
-  }
-
-  private JobWorker newWorker(
-      final ZeebeSourceConnectorConfig config, final String type, final ZeebeClient client) {
-    jobHeaderTopic = config.getString(ZeebeSourceConnectorConfig.JOB_HEADER_TOPICS_CONFIG);
-    final List<String> jobVariables =
-        config.getList(ZeebeSourceConnectorConfig.JOB_VARIABLES_CONFIG);
-    final Duration jobTimeout =
-        Duration.ofMillis(config.getLong(ZeebeSourceConnectorConfig.JOB_TIMEOUT_CONFIG));
-    final Duration requestTimeout =
-        Duration.ofMillis(config.getLong(ZeebeClientConfigDef.REQUEST_TIMEOUT_CONFIG));
-    final Duration pollInterval =
-        Duration.ofMillis(config.getLong(ZeebeSourceConnectorConfig.POLL_INTERVAL_CONFIG));
-    final String workerName = config.getString(ZeebeSourceConnectorConfig.WORKER_NAME_CONFIG);
-
-    return client
-        .newWorker()
-        .jobType(type)
-        .handler(this::onJobActivated)
-        .name(workerName)
-        .maxJobsActive(maxJobsToActivate)
-        .requestTimeout(requestTimeout)
-        .timeout(jobTimeout)
-        .pollInterval(pollInterval)
-        .fetchVariables(jobVariables)
-        .open();
-  }
-
-  private boolean isJobInvalid(final ActivatedJob job) {
-    final String topic = job.getCustomHeaders().get(jobHeaderTopic);
-    return topic == null || topic.isEmpty();
-  }
-
-  // eventually allow this behaviour here to be configurable: whether to ignore, fail, or
-  // throw an exception here on invalid jobs
-  // should we block until the request is finished?
-  private Future<Void> handleInvalidJob(final JobClient client, final ActivatedJob job) {
-    LOGGER.debug("Failing invalid job: {}", job);
-    return client
-        .newFailCommand(job.getKey())
-        .retries(job.getRetries() - 1)
-        .errorMessage(
-            String.format(
-                "Expected a kafka topic to be defined as a custom header with key '%s', but none found",
-                jobHeaderTopic))
-        .send();
-  }
-
-  private void onJobActivated(final JobClient client, final ActivatedJob job)
-      throws InterruptedException, AlreadyClosedException {
-    if (isJobInvalid(job)) {
-      managedClient.withClient(c -> handleInvalidJob(c, job));
-    } else {
-      LOGGER.trace("Activating job {}", job);
-      try {
-        jobs.put(job);
-        LOGGER.trace("Activated jobs: {}", jobs.size());
-      } catch (final RuntimeException e) {
-        LOGGER.error("Failed to append job {} to jobs queue", job, e);
-      }
-    }
   }
 
   // Copied from Zeebe Protocol as it is currently fixed to Java 11, and the connector to Java 8
