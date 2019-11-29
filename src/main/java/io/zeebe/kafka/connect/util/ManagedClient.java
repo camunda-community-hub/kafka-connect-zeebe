@@ -19,6 +19,7 @@ import io.zeebe.client.ZeebeClient;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Wraps a ZeebeClient to provide safe access to it with minimal synchronization.
@@ -41,7 +42,7 @@ public class ManagedClient {
     this.lock = new ReentrantLock();
   }
 
-  public void withClient(final Consumer<ZeebeClient> callback)
+  public <T> T withClient(final Function<ZeebeClient, T> callback)
       throws AlreadyClosedException, InterruptedException {
     if (closed) {
       throw new AlreadyClosedException();
@@ -49,7 +50,7 @@ public class ManagedClient {
 
     lock.lockInterruptibly();
     try {
-      callback.accept(client);
+      return callback.apply(client);
     } finally {
       lock.unlock();
 

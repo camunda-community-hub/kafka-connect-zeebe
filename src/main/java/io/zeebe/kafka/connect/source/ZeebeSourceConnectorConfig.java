@@ -29,7 +29,6 @@ public class ZeebeSourceConnectorConfig extends AbstractConfig {
   public static final String JOB_TYPES_CONFIG = "job.types";
   static final String WORKER_NAME_CONFIG = ClientProperties.DEFAULT_JOB_WORKER_NAME;
   static final String MAX_JOBS_TO_ACTIVATE_CONFIG = ClientProperties.JOB_WORKER_MAX_JOBS_ACTIVE;
-  static final String POLL_INTERVAL_CONFIG = ClientProperties.DEFAULT_JOB_POLL_INTERVAL;
   static final String JOB_TIMEOUT_CONFIG = ClientProperties.DEFAULT_JOB_TIMEOUT;
   static final String JOB_HEADER_TOPICS_CONFIG = "job.header.topics";
   static final String JOB_VARIABLES_CONFIG = "job.variables";
@@ -39,8 +38,6 @@ public class ZeebeSourceConnectorConfig extends AbstractConfig {
   private static final int MAX_JOBS_TO_ACTIVATE_DEFAULT = 100;
   private static final String MAX_JOBS_TO_ACTIVATE_DOC =
       "Maximum number of jobs to fetch at once when a task is polling";
-  private static final long POLL_INTERVAL_DEFAULT = 5000;
-  private static final String POLL_INTERVAL_DOC = "How often the job worker will poll for new jobs";
   private static final long JOB_TIMEOUT_DEFAULT = 5_000;
   private static final String JOB_TIMEOUT_DOC =
       "How long to wait before the job fetched can be seen by another worker; this should be "
@@ -94,16 +91,6 @@ public class ZeebeSourceConnectorConfig extends AbstractConfig {
             ++order,
             Width.SHORT,
             "Max jobs to activate")
-        .define(
-            POLL_INTERVAL_CONFIG,
-            Type.LONG,
-            POLL_INTERVAL_DEFAULT,
-            Importance.MEDIUM,
-            WORKER_CONFIG_GROUP,
-            POLL_INTERVAL_DOC,
-            ++order,
-            Width.SHORT,
-            "Poll interval")
         .define(
             JOB_TIMEOUT_CONFIG,
             Type.LONG,
