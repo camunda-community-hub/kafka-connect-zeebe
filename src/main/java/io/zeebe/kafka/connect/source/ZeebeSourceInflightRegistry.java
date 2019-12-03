@@ -16,10 +16,10 @@
 package io.zeebe.kafka.connect.source;
 
 import io.zeebe.client.api.response.ActivatedJob;
-import java.util.ArrayDeque;
-import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
@@ -29,13 +29,13 @@ class ZeebeSourceInflightRegistry {
   private final Integer maxJobsToActivate;
   private final List<String> jobTypes;
   private final Map<String, Integer> inflightJobPerTypeCounts;
-  private final Deque<JobInfo> inflightJobInfoQueue;
+  private final Queue<JobInfo> inflightJobInfoQueue;
 
   ZeebeSourceInflightRegistry(final ZeebeSourceConnectorConfig config) {
     maxJobsToActivate = config.getInt(ZeebeSourceConnectorConfig.MAX_JOBS_TO_ACTIVATE_CONFIG);
     jobTypes = config.getList(ZeebeSourceConnectorConfig.JOB_TYPES_CONFIG);
     inflightJobPerTypeCounts = new ConcurrentHashMap<>(jobTypes.size());
-    inflightJobInfoQueue = new ArrayDeque<>(maxJobsToActivate * jobTypes.size());
+    inflightJobInfoQueue = new LinkedList<>();
   }
 
   boolean hasCapacity() {
@@ -56,13 +56,13 @@ class ZeebeSourceInflightRegistry {
 
   ActivatedJob registerJob(final ActivatedJob job) {
     inflightJobPerTypeCounts.merge(job.getType(), 0, (k, v) -> v + 1);
-    inflightJobInfoQueue.addLast(new JobInfo(job));
+    inflightJobInfoQueue.add(new JobInfo(job));
     return job;
   }
 
   long unregisterJob(final long key) {
     while (!inflightJobInfoQueue.isEmpty()) {
-      final JobInfo jobInfo = inflightJobInfoQueue.pollFirst();
+      final JobInfo jobInfo = inflightJobInfoQueue.remove();
       inflightJobPerTypeCounts.merge(jobInfo.getJobType(), 1, (k, v) -> v - 1);
       if (jobInfo.getKey() == key) {
         break;
