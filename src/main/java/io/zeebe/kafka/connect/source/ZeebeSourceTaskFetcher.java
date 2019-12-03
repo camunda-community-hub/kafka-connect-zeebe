@@ -85,11 +85,15 @@ class ZeebeSourceTaskFetcher {
           .send()
           .get()
           .getJobs();
-    } catch (final InterruptedException | ExecutionException e) {
+    } catch (final ExecutionException e) {
       LOGGER.warn(
           "Expected to fetch maximal {} jobs for type {}, but failed to do so", amount, jobType, e);
-      return Collections.emptyList();
+    } catch (final InterruptedException e) {
+      LOGGER.warn(
+          "Expected to fetch maximal {} jobs for type {}, but was interrupted", amount, jobType);
     }
+
+    return Collections.emptyList();
   }
 
   // eventually allow this behaviour here to be configurable: whether to ignore, fail, or

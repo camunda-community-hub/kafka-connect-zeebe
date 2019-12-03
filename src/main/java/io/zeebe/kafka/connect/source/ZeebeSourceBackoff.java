@@ -54,7 +54,7 @@ public class ZeebeSourceBackoff {
     try {
       Thread.sleep(backoff);
     } catch (final InterruptedException e) {
-      // ignore
+      Thread.currentThread().interrupt();
     }
   }
 }

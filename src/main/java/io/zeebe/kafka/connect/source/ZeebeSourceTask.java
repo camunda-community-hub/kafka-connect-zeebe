@@ -94,11 +94,15 @@ public class ZeebeSourceTask extends SourceTask {
       return managedClient
           .withClient(c -> taskFetcher.fetchBatch(c, jobType, amount, requestTimeout))
           .stream();
-    } catch (AlreadyClosedException | InterruptedException e) {
+    } catch (final AlreadyClosedException e) {
       LOGGER.warn(
           "Expected to activate jobs for type {}, but failed to receive response", jobType, e);
-      return Stream.empty();
+
+    } catch (final InterruptedException e) {
+      LOGGER.warn("Expected to activate jobs for type {}, but was interrupted", jobType);
+      Thread.currentThread().interrupt();
     }
+    return Stream.empty();
   }
 
   @Override
@@ -128,6 +132,7 @@ public class ZeebeSourceTask extends SourceTask {
       LOGGER.debug("Expected to complete job {}, but client is already closed", key);
     } catch (final InterruptedException e) {
       LOGGER.debug("Expected to complete job {}, but was interrupted", key);
+      Thread.currentThread().interrupt();
     }
   }
 
