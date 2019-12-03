@@ -16,6 +16,7 @@
 package io.zeebe.kafka.connect.util;
 
 import io.zeebe.client.ClientProperties;
+import java.time.Duration;
 import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.common.config.ConfigDef.Importance;
 import org.apache.kafka.common.config.ConfigDef.Type;
@@ -30,7 +31,7 @@ public final class ZeebeClientConfigDef {
   private static final String BROKER_CONTACTPOINT_DEFAULT = "localhost:26500";
   private static final String BROKER_CONTACTPOINT_DOC =
       "Broker contact point, e.g. ``localhost:26500``, for the Zeebe client";
-  private static final long REQUEST_TIMEOUT_DEFAULT = 10_000;
+  private static final long REQUEST_TIMEOUT_DEFAULT = Duration.ofSeconds(1).toMillis();
   private static final String REQUEST_TIMEOUT_DOC =
       "How long to wait before a request to the broker is timed out";
   private static final boolean USE_PLAINTEXT_DEFAULT = false;
