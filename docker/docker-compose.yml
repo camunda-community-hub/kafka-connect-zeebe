@@ -71,7 +71,7 @@ services:
       - kafka
 
   connect:
-    image: confluentinc/cp-kafka-connect:5.3.0
+    image: camunda/kafka-connect-zeebe
     hostname: connect
     ports:
       - "8083:8083"
@@ -95,8 +95,6 @@ services:
       CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: "1"
       CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: "1"
       CONNECT_PLUGIN_PATH: '/usr/share/java,/etc/kafka-connect/jars'
-    volumes:
-      - ./connectors:/etc/kafka-connect/jars/
     depends_on:
       - schema-registry
       - kafka
