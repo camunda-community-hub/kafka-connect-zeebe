@@ -43,7 +43,7 @@
     <version.junit>5.5.2</version.junit>
     <version.log4j>2.12.0</version.log4j>
     <version.slf4j>1.7.26</version.slf4j>
-    <version.zeebe>0.21.1</version.zeebe>
+    <version.zeebe>0.22.1</version.zeebe>
 
     <!-- plugin version -->
     <plugin.version.assembly>3.1.1</plugin.version.assembly>
