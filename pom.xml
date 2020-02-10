@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
   <name>Kafka Connect Zeebe</name>
   <artifactId>kafka-connect-zeebe</artifactId>
   <groupId>io.zeebe</groupId>
   <packaging>jar</packaging>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>0.22.0</version>
   <inceptionYear>2019</inceptionYear>
   <url>https://github.com/zeebe-io/kafka-connect-zeebe</url>
 
@@ -18,7 +16,7 @@
     <artifactId>camunda-release-parent</artifactId>
     <version>2.5</version>
     <!-- do not remove empty tag - http://jira.codehaus.org/browse/MNG-4687 -->
-    <relativePath/>
+    <relativePath />
   </parent>
 
   <properties>
@@ -388,7 +386,7 @@
     <connection>scm:git:git@github.com:zeebe-io/kafka-connect-zeebe.git</connection>
     <developerConnection>scm:git:git@github.com:zeebe-io/kafka-connect-zeebe.git
     </developerConnection>
-    <tag>HEAD</tag>
+    <tag>0.22.0</tag>
   </scm>
 </project>
 
