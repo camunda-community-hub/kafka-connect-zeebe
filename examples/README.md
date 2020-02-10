@@ -17,6 +17,10 @@ To run the example you need the following tools on your system:
 1. Java and [maven](https://maven.apache.org/) to build the connector
 1. [Zeebe Modeler](https://github.com/zeebe-io/zeebe-modeler/releases) (optional, but it is a nice addition to graphically model the Zeebe workflows)
 
+The following system requirements apply
+
+* At least *6,5 GB* of RAM dedicated to Docker, otherwise Kafka might not come up. If you experience problems try to increase memory first, as Docker has relatively little memory in default.
+
 
 ## Build the connector
 
