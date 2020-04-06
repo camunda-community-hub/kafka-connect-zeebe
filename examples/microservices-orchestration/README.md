@@ -62,7 +62,7 @@ To publish a message back through the connector, we have to produce a record on 
 To publish a message, run:
 
 ```shell
-make producer
+make payment
 ```
 
 This will start the [kafka-console-producer](https://kafka.apache.org/quickstart#quickstart_send).
