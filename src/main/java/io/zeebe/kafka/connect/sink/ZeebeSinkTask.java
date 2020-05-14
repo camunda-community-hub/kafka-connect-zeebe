@@ -19,6 +19,7 @@ import io.zeebe.client.ZeebeClient;
 import io.zeebe.client.ZeebeClientBuilder;
 import io.zeebe.client.api.command.FinalCommandStep;
 import io.zeebe.client.api.command.PublishMessageCommandStep1.PublishMessageCommandStep3;
+import io.zeebe.client.api.response.PublishMessageResponse;
 import io.zeebe.kafka.connect.sink.message.JsonRecordParser;
 import io.zeebe.kafka.connect.sink.message.JsonRecordParser.Builder;
 import io.zeebe.kafka.connect.sink.message.Message;
@@ -90,7 +91,7 @@ public class ZeebeSinkTask extends SinkTask {
     return CompletableFuture.allOf(inFlightRequests);
   }
 
-  private FinalCommandStep<Void> preparePublishRequest(
+  private FinalCommandStep<PublishMessageResponse> preparePublishRequest(
       final ZeebeClient client, final SinkRecord record) {
     final Message message = parser.parse(record);
     PublishMessageCommandStep3 request =

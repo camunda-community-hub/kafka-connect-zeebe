@@ -18,13 +18,14 @@ package io.zeebe.kafka.connect.sink;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
 import io.zeebe.client.api.command.FinalCommandStep;
+import io.zeebe.client.api.response.PublishMessageResponse;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class ZeebeSinkFuture extends CompletableFuture<Void> {
+class ZeebeSinkFuture extends CompletableFuture<PublishMessageResponse> {
 
   public static final Set<Code> SUCCESS_CODES = EnumSet.of(Code.OK, Code.ALREADY_EXISTS);
   public static final Set<Code> RETRIABLE_CODES =
@@ -48,18 +49,18 @@ class ZeebeSinkFuture extends CompletableFuture<Void> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ZeebeSinkFuture.class);
 
-  private final FinalCommandStep<Void> command;
+  private final FinalCommandStep<PublishMessageResponse> command;
 
-  ZeebeSinkFuture(final FinalCommandStep<Void> command) {
+  ZeebeSinkFuture(final FinalCommandStep<PublishMessageResponse> command) {
     this.command = command;
   }
 
   @SuppressWarnings("unchecked")
-  private CompletableFuture<Void> sendCommand() {
-    return (CompletableFuture<Void>) command.send();
+  private CompletableFuture<PublishMessageResponse> sendCommand() {
+    return (CompletableFuture<PublishMessageResponse>) command.send();
   }
 
-  CompletableFuture<Void> executeAsync() {
+  CompletableFuture<PublishMessageResponse> executeAsync() {
     sendCommand()
         .whenCompleteAsync(
             (aVoid, throwable) -> {
