@@ -13,7 +13,7 @@ The example needs the payment service to be simulated, means you need to publish
 
 ```json
 {
-  "eventType": "OrderPaid", 
+  "eventType": "OrderPaid",
   "orderId": 1,
   "amount": 4000
 }
@@ -46,7 +46,7 @@ make workflow source sink
 #### Create an instance
 
 ```shell
-make workflow
+make order
 ```
 
 #### Start the logger worker
@@ -70,7 +70,7 @@ Simply write the expected JSON record, e.g.:
 
 ```json
 {"eventType": "OrderPaid", "orderId": 1, "amount": 4000}
-``` 
+```
 
 ### Manually
 
@@ -129,6 +129,6 @@ To confirm the order, we can write a record of the following format:
 
 ```json
 {"eventType": "OrderPaid", "orderId": 1, "amount": 4000}
-``` 
+```
 
 Make sure to update the `orderId` to match the expected correlation key.
