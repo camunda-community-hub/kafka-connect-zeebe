@@ -96,7 +96,7 @@ curl -X POST -H "Content-Type: application/json" --data @examples/ping-pong/sour
 Next, create the sink connector:
 
 ```
-curl -X POST -H "Content-Type: application/json" --data @examples/ping-pong/source.json http://localhost:8083
+curl -X POST -H "Content-Type: application/json" --data @examples/ping-pong/sink.json http://localhost:8083
 ```
 
 #### Create a workflow instance
