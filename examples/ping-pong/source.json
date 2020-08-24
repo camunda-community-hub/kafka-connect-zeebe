@@ -7,9 +7,14 @@
     "key.converter.schemas.enable": false,
     "value.converter": "org.apache.kafka.connect.json.JsonConverter",
     "value.converter.schemas.enable": false,
-    "zeebe.client.broker.contactPoint": "zeebe:26500",
-    "zeebe.client.requestTimeout": "10000",
-    "zeebe.client.security.plaintext": true,
+
+    "__zeebe.client.broker.contactPoint": "zeebe:26500",
+    "__zeebe.client.requestTimeout": "10000",
+    "__zeebe.client.security.plaintext": true,
+    "zeebe.client.cloud.clusterId": "5be4da01-1f35-4deb-8681-592c7001d1bd",
+    "zeebe.client.cloud.clientId": "8Yni-2iVjOzUMsai_xQrnoY-y2EGlN_H",
+    "zeebe.client.cloud.clientSecret": "RH65GZm1N4SygpLEHiqPcPkd80fz_sF2LNZfrAsC6ttIoBy288bkAexscf1PG_PV",
+
     "zeebe.client.job.worker": "kafka-connector",
     "zeebe.client.worker.maxJobsActive": "100",
     "zeebe.client.job.pollinterval": "2000",

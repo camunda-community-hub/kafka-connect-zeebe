@@ -23,6 +23,7 @@ import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
 import io.zeebe.client.api.ZeebeFuture;
 import io.zeebe.client.api.command.FinalCommandStep;
+import io.zeebe.client.api.response.PublishMessageResponse;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -132,7 +133,7 @@ class ZeebeSinkFutureTest {
     return new ZeebeSinkFuture(new FinalStepMock(r));
   }
 
-  static class FinalStepMock implements FinalCommandStep<Void> {
+  static class FinalStepMock implements FinalCommandStep<PublishMessageResponse> {
 
     final Runnable mock;
 
@@ -141,12 +142,12 @@ class ZeebeSinkFutureTest {
     }
 
     @Override
-    public FinalCommandStep<Void> requestTimeout(final Duration duration) {
+    public FinalCommandStep<PublishMessageResponse> requestTimeout(final Duration duration) {
       return this;
     }
 
     @Override
-    public ZeebeFuture<Void> send() {
+    public ZeebeFuture<PublishMessageResponse> send() {
       final ZeebeFutureMock future = new ZeebeFutureMock();
       try {
         mock.run();
@@ -159,10 +160,11 @@ class ZeebeSinkFutureTest {
     }
   }
 
-  static class ZeebeFutureMock extends CompletableFuture<Void> implements ZeebeFuture<Void> {
+  static class ZeebeFutureMock extends CompletableFuture<PublishMessageResponse>
+      implements ZeebeFuture<PublishMessageResponse> {
 
     @Override
-    public Void join(final long l, final TimeUnit timeUnit) {
+    public PublishMessageResponse join(final long l, final TimeUnit timeUnit) {
       try {
         return get(l, timeUnit);
       } catch (final Exception e) {

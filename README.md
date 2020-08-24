@@ -6,13 +6,17 @@ This [Kafka Connect](https://docs.confluent.io/current/connect/index.html) conne
 
 * **Consume messages from a Kafka topic and correlate them to a workflow**. This is a Kafka Connect **sink**.
 
+It can work with [Camunda Cloud](https://camunda.com/products/cloud/) or a standalone Zeebe broker.
+
 ![Overview](doc/images/overview.png)
 
 See this [blog post](https://zeebe.io/blog/2018/12/writing-an-apache-kafka-connector-for-zeebe/) for some background on the implementation.
 
+
 # Examples
 
 **[Examples](examples)**
+
 
 # Installation and quickstart
 
@@ -40,11 +44,27 @@ You could simply ingest all messages from a Kafka topic and check if they correl
 
 ### Configuration
 
-In order to communicate with Zeebe, the connector has to create a Zeebe client, which must be configured with the following properties:
+In order to communicate with the Zeebe workflow engine, the connector has to create a Zeebe client. 
+
+#### Camunda Cloud Properties
+
+If you want to connect to Camunda Cloud, you can use these properties:
+
+- `zeebe.client.cloud.clusterId`: Cluster ID you want to connect to. The Cluster must run on the public Camunda Cloud
+- `zeebe.client.cloud.clientId`: Client ID for the connection. Ideally, create dedicated client credentials for this communication using the Camunda Cloud Console.
+- `zeebe.client.cloud.clientSecret`: The Client Secret required
+- `zeebe.client.requestTimeout`: timeout in milliseconds for requests to the Zeebe broker; defaults to `10000` (or 10 seconds)
+
+#### Zeebe Broker Properties
+
+If you want to connect to a Zeebe broker hosted yourself (e.g. running on localhost), use these properties:
 
 - `zeebe.client.broker.contactPoint`: the Zeebe broker address, specified as `host:port`; defaults to `localhost:26500`
 - `zeebe.client.requestTimeout`: timeout in milliseconds for requests to the Zeebe broker; defaults to `10000` (or 10 seconds)
 - `zeebe.client.security.plaintext`: disable secure connections to the gateway for local development setups
+
+
+#### Common Configuration
 
 > For client and job worker configuration, we reuse the system properties as used by Zeebe, so if you already have a properties file
   for those they should simply work.

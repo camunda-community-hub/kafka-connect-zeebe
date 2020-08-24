@@ -16,12 +16,11 @@
 package io.zeebe.kafka.connect.source;
 
 import io.zeebe.client.ZeebeClient;
-import io.zeebe.client.ZeebeClientBuilder;
 import io.zeebe.client.api.response.ActivatedJob;
 import io.zeebe.kafka.connect.util.ManagedClient;
 import io.zeebe.kafka.connect.util.ManagedClient.AlreadyClosedException;
 import io.zeebe.kafka.connect.util.VersionInfo;
-import io.zeebe.kafka.connect.util.ZeebeClientConfigDef;
+import io.zeebe.kafka.connect.util.ZeebeClientHelper;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
@@ -50,7 +49,7 @@ public class ZeebeSourceTask extends SourceTask {
   @Override
   public void start(final Map<String, String> props) {
     final ZeebeSourceConnectorConfig config = new ZeebeSourceConnectorConfig(props);
-    final ZeebeClient client = buildClient(config);
+    final ZeebeClient client = ZeebeClientHelper.buildClient(config);
     managedClient = new ManagedClient(client);
 
     topicExtractor = new ZeebeSourceTopicExtractor(config);
@@ -139,19 +138,6 @@ public class ZeebeSourceTask extends SourceTask {
   @Override
   public String version() {
     return VersionInfo.getVersion();
-  }
-
-  private ZeebeClient buildClient(final ZeebeSourceConnectorConfig config) {
-    final ZeebeClientBuilder zeebeClientBuilder =
-        ZeebeClient.newClientBuilder()
-            .brokerContactPoint(config.getString(ZeebeClientConfigDef.BROKER_CONTACTPOINT_CONFIG))
-            .numJobWorkerExecutionThreads(1);
-
-    if (config.getBoolean(ZeebeClientConfigDef.USE_PLAINTEXT_CONFIG)) {
-      zeebeClientBuilder.usePlaintext();
-    }
-
-    return zeebeClientBuilder.build();
   }
 
   private SourceRecord transformJob(final ActivatedJob job) {

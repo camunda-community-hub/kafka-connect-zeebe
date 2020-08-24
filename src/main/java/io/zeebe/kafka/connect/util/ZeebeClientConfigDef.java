@@ -23,9 +23,14 @@ import org.apache.kafka.common.config.ConfigDef.Type;
 import org.apache.kafka.common.config.ConfigDef.Width;
 
 public final class ZeebeClientConfigDef {
+
   public static final String BROKER_CONTACTPOINT_CONFIG = ClientProperties.BROKER_CONTACTPOINT;
   public static final String REQUEST_TIMEOUT_CONFIG = ClientProperties.DEFAULT_REQUEST_TIMEOUT;
   public static final String USE_PLAINTEXT_CONFIG = ClientProperties.USE_PLAINTEXT_CONNECTION;
+
+  public static final String CAMUNDA_CLOUD_CLUSTER_ID_CONFIG = "zeebe.client.cloud.clusterId";
+  public static final String CAMUNDA_CLOUD_CLIENT_ID_CONFIG = "zeebe.client.cloud.clientId";
+  public static final String CAMUNDA_CLOUD_CLIENT_SECRET_CONFIG = "zeebe.client.cloud.clientSecret";
 
   private static final String CLIENT_CONFIG_GROUP = "Zeebe Client";
   private static final String BROKER_CONTACTPOINT_DEFAULT = "localhost:26500";
@@ -37,6 +42,11 @@ public final class ZeebeClientConfigDef {
   private static final boolean USE_PLAINTEXT_DEFAULT = false;
   private static final String USE_PLAINTEXT_DOC =
       "Disable secure connection to gateway for the Zeebe client";
+
+  private static final String CAMUNDA_CLOUD_CLUSTER_ID_DOC =
+      "Camunda Cloud Cluster ID to connect to (on zeebe.camunda.io). If set this is used instead of the broker contact point.";
+  private static final String CAMUNDA_CLOUD_CLIENT_ID_DOC = "Camunda Cloud Client ID";
+  private static final String CAMUNDA_CLOUD_CLIENT_SECRET_DOC = "Camunda Cloud Client Secret";
 
   private ZeebeClientConfigDef() {}
 
@@ -73,6 +83,36 @@ public final class ZeebeClientConfigDef {
             CLIENT_CONFIG_GROUP,
             ++order,
             Width.SHORT,
-            "Use plaintext connection");
+            "Use plaintext connection")
+        .define(
+            CAMUNDA_CLOUD_CLUSTER_ID_CONFIG,
+            Type.STRING,
+            null,
+            Importance.LOW,
+            CAMUNDA_CLOUD_CLUSTER_ID_DOC,
+            CLIENT_CONFIG_GROUP,
+            ++order,
+            Width.MEDIUM,
+            "Zeebe Cluster Id")
+        .define(
+            CAMUNDA_CLOUD_CLIENT_ID_CONFIG,
+            Type.STRING,
+            null,
+            Importance.LOW,
+            CAMUNDA_CLOUD_CLIENT_ID_DOC,
+            CLIENT_CONFIG_GROUP,
+            ++order,
+            Width.MEDIUM,
+            "Zeebe Client Id")
+        .define(
+            CAMUNDA_CLOUD_CLIENT_SECRET_CONFIG,
+            Type.STRING,
+            null,
+            Importance.LOW,
+            CAMUNDA_CLOUD_CLIENT_SECRET_DOC,
+            CLIENT_CONFIG_GROUP,
+            ++order,
+            Width.MEDIUM,
+            "Zeebe Client Secret");
   }
 }

@@ -24,7 +24,7 @@ The example needs the payment service to be simulated, means you need to publish
 
 ## Prerequisites
 
-* Install and run Kafka, Kafka Connect and Zeebe as described [here](https://github.com/zeebe-io/kafka-connect-zeebe/tree/master/examples#setup)
+* Install and run Kafka, Kafka Connect and Zeebe as described [here](https://github.com/zeebe-io/kafka-connect-zeebe/tree/master/examples#setup). The following description assumes that Zeebe is started via docker-compose locally.
 
 ## Running the example
 
@@ -88,13 +88,13 @@ Make sure to configure them according to the following properties: [source conne
 
 Now create the source connector:
 ```shell
-curl -X POST -H "Content-Type: application/json" --data @payment-source.json http://localhost:8083
+curl -X POST -H "Content-Type: application/json" --data @payment-source.json http://localhost:8083/connectors
 ```
 
 Next, create the sink connector:
 
 ```
-curl -X POST -H "Content-Type: application/json" --data @payment-sink.json http://localhost:8083
+curl -X POST -H "Content-Type: application/json" --data @payment-sink.json http://localhost:8083/connectors
 ```
 
 #### Create a workflow instance

@@ -1,7 +1,6 @@
 # Ping Pong
 
-This is a very simple example to showcase the interaction between Zeebe and Kafka using Kafka Connect
-and the Zeebe source and sink connectors, using the following process:
+This is a very simple example to showcase the interaction between Zeebe and Kafka using Kafka Connect and the Zeebe source and sink connectors, using the following process:
 
 ![Process](process.png)
 
@@ -48,55 +47,61 @@ be a top level variable.
 
 ## Running the example
 
-The simplest way to run through it is to use the provided `Makefile`. If that's not an
-option on your system, then you can run all the steps manually.
+### Deploy workflow
 
+You can use [`zbctl`](https://github.com/zeebe-io/zeebe/releases) or the Zeebe Modeler to deploy the workflow to Camunda Cloud. 
 
-### Makefile
-
-> To use the `Makefile` you will also need [curl](https://curl.haxx.se/).
-
-Running `make` deploy all resources, and create a single workflow instance. Broken down into steps:
-
-#### Deploy workflow and connectors
+Using command line, make sure you add the camunda cloud information:
 
 ```shell
-make workflow source sink
+zbctl --address 5be4da01-1f35-4deb-8681-592c7001d1bd.zeebe.camunda.io:443 --clientId 8Yni-2iVjOzUMsai_xQrnoY-y2EGlN_H --clientSecret RH65GZm1N4SygpLEHiqPcPkd80fz_sF2LNZfrAsC6ttIoBy288bkAexscf1PG_PV create instance --variables "{\"name\": \"pong\", \"payload\": { \"foo\": \"bar\"}, \"key\": 1}" ping-pong
 ```
 
-#### Create an instance
-
-To create the instance, run:
-
-```shell
-make ping
-```
-### Manually
-
-If `make` is not available on your system then you can run steps manually:
-
-#### Deploy workflow
+If you run Zeebe via the local docker-compose, you can use zbctl from the docker image:
 
 ```shell
 docker-compose -f docker/docker-compose.yml exec zeebe \
-  zbctl create instance --variables "{\"name\": \"pong\", \"payload\": { \"foo\": \"bar\"}, \"key\": 1}" ping-pong
+  zbctl create instance --insecure --variables "{\"name\": \"pong\", \"payload\": { \"foo\": \"bar\"}, \"key\": 1}" ping-pong
 ```
+
 
 #### Deploy connectors
 
 If `curl` is not available, you can also use [Control Center](http://localhost:9021) to create the connectors.
-Make sure to configure them according to the following properties: [source connector properties](source.json), [sink connector properties](sink.json)
+
+Make sure to configure the connectors according to the following properties: [source connector properties](source.json), [sink connector properties](sink.json). Especially the Camunda Cloud cluster id and client credentials need to be set (the "\_" is used to comment these lines):
+
+```json
+    "__zeebe.client.broker.contactPoint": "zeebe:26500",
+    "__zeebe.client.requestTimeout": "10000",
+    "__zeebe.client.security.plaintext": true,
+    "zeebe.client.cloud.clusterId": "5be4da01-1f35-4deb-8681-592c7001d1bd",
+    "zeebe.client.cloud.clientId": "8Yni-2iVjOzUMsai_xQrnoY-y2EGlN_H",
+    "zeebe.client.cloud.clientSecret": "RH65GZm1N4SygpLEHiqPcPkd80fz_sF2LNZfrAsC6ttIoBy288bkAexscf1PG_PV",
+```
+
+or if you want to use a local Zeebe broker:
+
+```json
+    "zeebe.client.broker.contactPoint": "zeebe:26500",
+    "zeebe.client.requestTimeout": "10000",
+    "zeebe.client.security.plaintext": true,
+    "__zeebe.client.cloud.clusterId": "5be4da01-1f35-4deb-8681-592c7001d1bd",
+    "__zeebe.client.cloud.clientId": "8Yni-2iVjOzUMsai_xQrnoY-y2EGlN_H",
+    "__zeebe.client.cloud.clientSecret": "RH65GZm1N4SygpLEHiqPcPkd80fz_sF2LNZfrAsC6ttIoBy288bkAexscf1PG_PV",
+```
+
 
 Now create the source connector:
 
 ```shell
-curl -X POST -H "Content-Type: application/json" --data @examples/ping-pong/source.json http://localhost:8083
+curl -X POST -H "Content-Type: application/json" --data @examples/ping-pong/source.json http://localhost:8083/connectors
 ```
 
 Next, create the sink connector:
 
 ```
-curl -X POST -H "Content-Type: application/json" --data @examples/ping-pong/source.json http://localhost:8083
+curl -X POST -H "Content-Type: application/json" --data @examples/ping-pong/sink.json http://localhost:8083/connectors
 ```
 
 #### Create a workflow instance
@@ -104,8 +109,7 @@ curl -X POST -H "Content-Type: application/json" --data @examples/ping-pong/sour
 We can now create a workflow instance:
 
 ```shell
-docker-compose -f docker/docker-compose.yml exec zeebe \
-	zbctl create instance --variables "{\"name\": \"pong\", \"payload\": { \"foo\": \"bar\"}, \"key\": 1}" ping-pong
+zbctl create instance --variables "{\"name\": \"pong\", \"payload\": { \"foo\": \"bar\"}, \"key\": 1}" ping-pong
 ```
 
-Replace the value of the key variable to change the correlation key.
+Replace the value of the variable `key` if you run multiple instances, to change the correlation key for each.
