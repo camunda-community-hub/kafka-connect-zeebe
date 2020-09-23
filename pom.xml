@@ -265,16 +265,16 @@
               <goal>kafka-connect</goal>
             </goals>
             <configuration>
-              <title>Kafka Connect Zeebe</title>
+              <title>Kafka Connect Camunda Cloud / Zeebe</title>
               <documentationUrl>https://github.com/zeebe-io/kafka-connect-zeebe/</documentationUrl>
               <description>
-                The Zeebe source connector can push activities, that need to be worked on, onto a Kafka topic. This allows to easily publish new records on Kafka from a BPMN workflow in Zeebe. It implements the BPMN message sending capabilities.
+                This connector connects the Camunda Cloud workflow engine (or standalone Zeebe) with Kafka. This brings BPMN process automation capabilities into the Kafka world.
 
-                The sink connector allows to send records from a Kafka topic to Zeebe workflows, leveraging the BPMN message correlation capabilities.
+			    The connector allows to send messages to a Kafka topic when a workflow instance reached a specific task (Kafka Connect Source) and to consume messages from a Kafka topic and correlate them to a process instance (Kafka Connect Sink).
 
-                The connector makes it easy to orchestrate microservices that are connected through Kafka with Zeebe.
+				Typical use cases are microservices orchestration or processes triggered by certain events.
               </description>
-              <logo>logos/zeebe.png</logo>
+              <logo>logos/camunda.png</logo>
 
               <supportProviderName>Camunda Services GmbH</supportProviderName>
               <supportSummary>
@@ -283,11 +283,11 @@
               <supportUrl>https://github.com/zeebe-io/kafka-connect-zeebe/</supportUrl>
               <supportLogo>logos/camunda.png</supportLogo>
 
-              <ownerUsername>zeebe-io</ownerUsername>
+              <ownerUsername>camunda</ownerUsername>
               <ownerType>organization</ownerType>
               <ownerName>Camunda Services GmbH</ownerName>
-              <ownerUrl>https://zeebe.io/</ownerUrl>
-              <ownerLogo>logos/zeebe.png</ownerLogo>
+              <ownerUrl>https://camunda.com/</ownerUrl>
+              <ownerLogo>logos/camunda.png</ownerLogo>
 
               <componentTypes>
                 <componentType>sink</componentType>
@@ -297,6 +297,8 @@
               <tags>
                 <tag>zeebe</tag>
                 <tag>camunda</tag>
+                <tag>camunda cloud</tag>
+                <tag>process automation</tag>
                 <tag>workflow</tag>
                 <tag>workflow automation</tag>
                 <tag>orchestration</tag>
