@@ -2,7 +2,7 @@
 
 This [Kafka Connect](https://docs.confluent.io/current/connect/index.html) connector for [Zeebe](https://zeebe.io) can do two things:
 
-* **Send messages to a Kafka topic** when a workflow instance reached a specific activity. Please note that a `message` is more precisly a kafka `record`, which is also often named `event`. This is a **source** in the Kafka Connect speak.
+* **Send messages to a Kafka topic** when a workflow instance reached a specific activity. Please note that a `message` is more precisely a kafka `record`, which is also often named `event`. This is a **source** in the Kafka Connect speak.
 
 * **Consume messages from a Kafka topic and correlate them to a workflow**. This is a Kafka Connect **sink**.
 
