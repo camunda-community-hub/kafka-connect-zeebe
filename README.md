@@ -13,9 +13,13 @@ It can work with [Camunda Cloud](https://camunda.com/products/cloud/) or a stand
 See this [blog post](https://zeebe.io/blog/2018/12/writing-an-apache-kafka-connector-for-zeebe/) for some background on the implementation.
 
 
-# Examples
+# Examples and walk-through
 
 **[Examples](examples)**
+
+The following video walks you through an example connecting to [Camunda Cloud](https://camunda.com/products/cloud/):
+
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=Sw-5uOuQPVI" target="_blank"><img src="http://img.youtube.com/vi/Sw-5uOuQPVI/0.jpg" alt="Walkthrough" width="240" height="180" border="10" /></a>
 
 
 # Installation and quickstart
