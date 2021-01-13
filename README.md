@@ -42,7 +42,7 @@ In a workflow model you can wait for certain events by name (extracted from the 
 ![Overview](doc/images/sink-example.png)
 
 The sink connector consumes Kafka records and publishes messages constructed from those records to Zeebe.
-This uses the [Zeebe Message Correlation](https://docs.zeebe.io/reference/message-correlation.html) features.
+This uses the [Zeebe Message Correlation](https://docs.camunda.io/docs/product-manuals/concepts/messages) features.
 So for example if no matching workflow instance is found, the message is buffered for its time-to-live (TTL) and then discarded.
 You could simply ingest all messages from a Kafka topic and check if they correlate to something in Zeebe.
 
