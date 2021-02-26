@@ -2,7 +2,7 @@ version: '2.1'
 
 services:
   zeebe:
-    image: camunda/zeebe:0.21.1
+    image: camunda/zeebe:0.26.0
     hostname: zeebe
     ports:
       - "26500:26500"
@@ -20,7 +20,7 @@ services:
       - ./operate.yml:/usr/local/operate/config/application.yml
     depends_on:
       - elasticsearch
-      
+
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.8.3
     ports:
@@ -41,7 +41,7 @@ services:
       ZOO_SERVERS: server.1=zookeeper:2888:3888
 
   kafka:
-    image: confluentinc/cp-enterprise-kafka:5.3.0
+    image: confluentinc/cp-enterprise-kafka:5.5.3
     hostname: kafka
     ports:
       - "9092:9092"
@@ -60,7 +60,7 @@ services:
       - zookeeper
 
   schema-registry:
-    image: confluentinc/cp-schema-registry:5.3.0
+    image: confluentinc/cp-schema-registry:5.5.3
     hostname: schema-registry
     ports:
       - "8081:8081"
@@ -73,7 +73,7 @@ services:
       - kafka
 
   connect:
-    image: confluentinc/cp-kafka-connect:5.3.0
+    image: confluentinc/cp-kafka-connect:5.5.3
     hostname: connect
     ports:
       - "8083:8083"
@@ -105,7 +105,7 @@ services:
       - zeebe
 
   control-center:
-    image: confluentinc/cp-enterprise-control-center:5.3.0
+    image: confluentinc/cp-enterprise-control-center:5.5.3
     hostname: control-center
     ports:
       - "9021:9021"
