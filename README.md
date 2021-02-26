@@ -48,7 +48,7 @@ You could simply ingest all messages from a Kafka topic and check if they correl
 
 ### Configuration
 
-In order to communicate with the Zeebe workflow engine, the connector has to create a Zeebe client. 
+In order to communicate with the Zeebe workflow engine, the connector has to create a Zeebe client.
 
 #### Camunda Cloud Properties
 
@@ -127,6 +127,13 @@ If this custom header is not present, then all variables in the scope will be se
 ## Configuring Error Handling of Kafka Connect, e.g. Logging or Dead Letter Queues
 
 Kafka Connect allows you to configure what happens if a message cannot be processed. A great explanation can be found in [Kafka Connect Deep Dive – Error Handling and Dead Letter Queues](https://www.confluent.io/blog/kafka-connect-deep-dive-error-handling-dead-letter-queues). This of course also applies to this connector.
+
+# Development
+
+To ease with development, you can add this environment variable to kafka-connect:
+`"JAVA_TOOL_OPTIONS": "-agentlib:jdwp=transport=dt_socket,address=*:5005,server=y,suspend=n"`
+
+And then use [remote debugging](https://www.jetbrains.com/help/idea/tutorial-remote-debug.html)
 
 # Confluent Hub
 
