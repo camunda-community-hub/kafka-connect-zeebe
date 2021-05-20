@@ -15,7 +15,7 @@
  */
 package io.zeebe.kafka.connect.source;
 
-import io.zeebe.client.api.response.ActivatedJob;
+import io.camunda.zeebe.client.api.response.ActivatedJob;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;

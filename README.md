@@ -9,7 +9,7 @@ This [Kafka Connect](https://docs.confluent.io/current/connect/index.html) conne
 
 * **Consume messages from a Kafka topic and correlate them to a workflow**. This is a Kafka Connect **sink**.
 
-It can work with [Camunda Cloud](https://camunda.com/products/cloud/) or a standalone Zeebe broker.
+It can work with [Camunda Cloud](https://camunda.com/products/cloud/) or a self-managed Zeebe broker.
 
 ![Overview](doc/images/overview.png)
 
@@ -51,7 +51,7 @@ You could simply ingest all messages from a Kafka topic and check if they correl
 
 ### Configuration
 
-In order to communicate with the Zeebe workflow engine, the connector has to create a Zeebe client. 
+In order to communicate with the Zeebe workflow engine, the connector has to create a Zeebe client.
 
 #### Camunda Cloud Properties
 
@@ -66,7 +66,7 @@ If you want to connect to Camunda Cloud, you can use these properties:
 
 If you want to connect to a Zeebe broker hosted yourself (e.g. running on localhost), use these properties:
 
-- `zeebe.client.broker.contactPoint`: the Zeebe broker address, specified as `host:port`; defaults to `localhost:26500`
+- `zeebe.client.gateway.address`: the Zeebe gateway address, specified as `host:port`; defaults to `localhost:26500`
 - `zeebe.client.requestTimeout`: timeout in milliseconds for requests to the Zeebe broker; defaults to `10000` (or 10 seconds)
 - `zeebe.client.security.plaintext`: disable secure connections to the gateway for local development setups
 
@@ -103,7 +103,7 @@ to Kafka based on those. As we do not yet support schemas, the record values are
 
 In order to communicate with Zeebe, the connector has to create a Zeebe client, which must be configured with the following properties:
 
-- `zeebe.client.broker.contactPoint`: the Zeebe broker address, specified as `host:port`; defaults to `localhost:26500`
+- `zeebe.client.gateway.address`: the Zeebe broker address, specified as `host:port`; defaults to `localhost:26500`
 - `zeebe.client.requestTimeout`: timeout in milliseconds for requests to the Zeebe broker; defaults to `10000` (or 10 seconds)
 
 > For client and job worker configuration, we reuse the system properties as used by Zeebe, so if you already have a properties file

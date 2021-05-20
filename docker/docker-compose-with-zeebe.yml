@@ -2,15 +2,19 @@ version: '2.1'
 
 services:
   zeebe:
-    image: camunda/zeebe:0.21.1
     hostname: zeebe
+    restart: always
+    image: camunda/zeebe:1.0.0
+    environment:
+      - ZEEBE_LOG_LEVEL=debug
+      - ZEEBE_INSECURE_CONNECTION=true
+    volumes:
+      - ./application.yaml:/usr/local/zeebe/config/application.yaml
     ports:
       - "26500:26500"
       - "9600:9600"
-    volumes:
-      - ./zeebe.cfg.yml:/usr/local/zeebe/config/application.yaml
-    environment:
-      ZEEBE_INSECURE_CONNECTION: "true"
+    depends_on:
+      - elasticsearch
 
   operate:
     image: camunda/operate:1.1.0
@@ -19,10 +23,11 @@ services:
     volumes:
       - ./operate.yml:/usr/local/operate/config/application.yml
     depends_on:
+      - zeebe
       - elasticsearch
-      
+
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.8.3
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2
     ports:
       - "9200:9200"
     environment:

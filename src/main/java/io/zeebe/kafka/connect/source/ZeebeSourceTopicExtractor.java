@@ -15,7 +15,7 @@
  */
 package io.zeebe.kafka.connect.source;
 
-import io.zeebe.client.api.response.ActivatedJob;
+import io.camunda.zeebe.client.api.response.ActivatedJob;
 
 public class ZeebeSourceTopicExtractor {
 

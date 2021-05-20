@@ -15,7 +15,7 @@
  */
 package io.zeebe.kafka.connect.util;
 
-import io.zeebe.client.ClientProperties;
+import io.camunda.zeebe.client.ClientProperties;
 import java.time.Duration;
 import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.common.config.ConfigDef.Importance;
@@ -24,7 +24,7 @@ import org.apache.kafka.common.config.ConfigDef.Width;
 
 public final class ZeebeClientConfigDef {
 
-  public static final String BROKER_CONTACTPOINT_CONFIG = ClientProperties.BROKER_CONTACTPOINT;
+  public static final String GATEWAY_ADDRESS_CONFIG = ClientProperties.GATEWAY_ADDRESS;
   public static final String REQUEST_TIMEOUT_CONFIG = ClientProperties.DEFAULT_REQUEST_TIMEOUT;
   public static final String USE_PLAINTEXT_CONFIG = ClientProperties.USE_PLAINTEXT_CONNECTION;
 
@@ -33,9 +33,9 @@ public final class ZeebeClientConfigDef {
   public static final String CAMUNDA_CLOUD_CLIENT_SECRET_CONFIG = "zeebe.client.cloud.clientSecret";
 
   private static final String CLIENT_CONFIG_GROUP = "Zeebe Client";
-  private static final String BROKER_CONTACTPOINT_DEFAULT = "localhost:26500";
-  private static final String BROKER_CONTACTPOINT_DOC =
-      "Broker contact point, e.g. ``localhost:26500``, for the Zeebe client";
+  private static final String GATEWAY_ADDRESS_DEFAULT = "localhost:26500";
+  private static final String GATEWAY_ADDRESS_DOC =
+      "Gateway address, e.g. ``localhost:26500``, for the Zeebe client";
   private static final long REQUEST_TIMEOUT_DEFAULT = Duration.ofSeconds(1).toMillis();
   private static final String REQUEST_TIMEOUT_DOC =
       "How long to wait before a request to the broker is timed out";
@@ -44,7 +44,7 @@ public final class ZeebeClientConfigDef {
       "Disable secure connection to gateway for the Zeebe client";
 
   private static final String CAMUNDA_CLOUD_CLUSTER_ID_DOC =
-      "Camunda Cloud Cluster ID to connect to (on zeebe.camunda.io). If set this is used instead of the broker contact point.";
+      "Camunda Cloud Cluster ID to connect to (on cloud.camunda.io). If set this is used instead of the gateway address.";
   private static final String CAMUNDA_CLOUD_CLIENT_ID_DOC = "Camunda Cloud Client ID";
   private static final String CAMUNDA_CLOUD_CLIENT_SECRET_DOC = "Camunda Cloud Client Secret";
 
@@ -55,11 +55,11 @@ public final class ZeebeClientConfigDef {
 
     definitions
         .define(
-            BROKER_CONTACTPOINT_CONFIG,
+            GATEWAY_ADDRESS_CONFIG,
             Type.STRING,
-            BROKER_CONTACTPOINT_DEFAULT,
+            GATEWAY_ADDRESS_DEFAULT,
             Importance.HIGH,
-            BROKER_CONTACTPOINT_DOC,
+            GATEWAY_ADDRESS_DOC,
             CLIENT_CONFIG_GROUP,
             ++order,
             Width.SHORT,

@@ -15,10 +15,8 @@
  */
 package io.zeebe.kafka.connect.util;
 
-import io.zeebe.client.ZeebeClient;
-import io.zeebe.client.ZeebeClientBuilder;
-import io.zeebe.client.impl.oauth.OAuthCredentialsProvider;
-import io.zeebe.client.impl.oauth.OAuthCredentialsProviderBuilder;
+import io.camunda.zeebe.client.ZeebeClient;
+import io.camunda.zeebe.client.ZeebeClientBuilder;
 import java.time.Duration;
 import org.apache.kafka.common.config.AbstractConfig;
 
@@ -36,22 +34,16 @@ public class ZeebeClientHelper {
       final String camundaCloudCliendSecret =
           config.getString(ZeebeClientConfigDef.CAMUNDA_CLOUD_CLIENT_SECRET_CONFIG);
 
-      final OAuthCredentialsProvider cred =
-          new OAuthCredentialsProviderBuilder() //
-              .audience(camundaCloudClusterId + ".zeebe.camunda.io") //
-              .clientId(camundaCloudClientId) //
-              .clientSecret(camundaCloudCliendSecret) //
-              .build();
-
-      return ZeebeClient.newClientBuilder() //
-          .brokerContactPoint(camundaCloudClusterId + ".zeebe.camunda.io:443") //
-          .credentialsProvider(cred) //
+      return ZeebeClient.newCloudClientBuilder()
+          .withClusterId(camundaCloudClusterId)
+          .withClientId(camundaCloudClientId)
+          .withClientSecret(camundaCloudCliendSecret)
           .build();
     } else {
       // Zeebe directly (e.g. localhost)
       final ZeebeClientBuilder zeebeClientBuilder =
           ZeebeClient.newClientBuilder()
-              .brokerContactPoint(config.getString(ZeebeClientConfigDef.BROKER_CONTACTPOINT_CONFIG))
+              .gatewayAddress(config.getString(ZeebeClientConfigDef.GATEWAY_ADDRESS_CONFIG))
               .numJobWorkerExecutionThreads(1)
               .defaultRequestTimeout(Duration.ofMillis(requestTimeoutMs));
 

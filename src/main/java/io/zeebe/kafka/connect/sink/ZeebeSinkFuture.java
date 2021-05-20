@@ -15,10 +15,10 @@
  */
 package io.zeebe.kafka.connect.sink;
 
+import io.camunda.zeebe.client.api.command.FinalCommandStep;
+import io.camunda.zeebe.client.api.response.PublishMessageResponse;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
-import io.zeebe.client.api.command.FinalCommandStep;
-import io.zeebe.client.api.response.PublishMessageResponse;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;

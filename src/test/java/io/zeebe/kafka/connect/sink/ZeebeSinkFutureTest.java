@@ -18,12 +18,12 @@ package io.zeebe.kafka.connect.sink;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.camunda.zeebe.client.api.ZeebeFuture;
+import io.camunda.zeebe.client.api.command.FinalCommandStep;
+import io.camunda.zeebe.client.api.response.PublishMessageResponse;
 import io.grpc.Status;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
-import io.zeebe.client.api.ZeebeFuture;
-import io.zeebe.client.api.command.FinalCommandStep;
-import io.zeebe.client.api.response.PublishMessageResponse;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;

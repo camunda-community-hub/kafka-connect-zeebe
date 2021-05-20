@@ -15,7 +15,7 @@
  */
 package io.zeebe.kafka.connect.source;
 
-import io.zeebe.client.ClientProperties;
+import io.camunda.zeebe.client.ClientProperties;
 import io.zeebe.kafka.connect.util.ZeebeClientConfigDef;
 import java.util.Map;
 import org.apache.kafka.common.config.AbstractConfig;

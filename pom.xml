@@ -41,7 +41,7 @@
     <version.junit>5.5.2</version.junit>
     <version.log4j>2.13.3</version.log4j>
     <version.slf4j>1.7.26</version.slf4j>
-    <version.zeebe>0.24.2</version.zeebe>
+    <version.zeebe>1.0.0</version.zeebe>
 
     <!-- plugin version -->
     <plugin.version.assembly>3.1.1</plugin.version.assembly>
@@ -60,7 +60,7 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>io.zeebe</groupId>
+        <groupId>io.camunda</groupId>
         <artifactId>zeebe-bom</artifactId>
         <version>${version.zeebe}</version>
         <scope>import</scope>
@@ -71,7 +71,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>io.zeebe</groupId>
+      <groupId>io.camunda</groupId>
       <artifactId>zeebe-client-java</artifactId>
     </dependency>
 
@@ -171,7 +171,7 @@
         <!-- dependency on build tool to reference the checkstyle cfg -->
         <dependencies>
           <dependency>
-            <groupId>io.zeebe</groupId>
+            <groupId>io.camunda</groupId>
             <artifactId>zeebe-build-tools</artifactId>
             <version>${version.zeebe}</version>
           </dependency>
@@ -325,7 +325,7 @@
       </resource>
     </resources>
   </build>
-
+<!--
   <profiles>
     <profile>
       <id>release</id>
@@ -346,7 +346,7 @@
               <artifactId>maven-gpg-plugin</artifactId>
               <configuration>
                 <gpgArguments>
-                  <arg>--pinentry-mode</arg>
+                  <arg>-pinentry-mode</arg>
                   <arg>loopback</arg>
                 </gpgArguments>
               </configuration>
@@ -356,7 +356,7 @@
       </build>
     </profile>
   </profiles>
-
+-->
   <repositories>
     <repository>
       <id>zeebe</id>

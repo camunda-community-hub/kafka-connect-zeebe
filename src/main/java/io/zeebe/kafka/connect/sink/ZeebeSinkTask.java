@@ -15,10 +15,10 @@
  */
 package io.zeebe.kafka.connect.sink;
 
-import io.zeebe.client.ZeebeClient;
-import io.zeebe.client.api.command.FinalCommandStep;
-import io.zeebe.client.api.command.PublishMessageCommandStep1.PublishMessageCommandStep3;
-import io.zeebe.client.api.response.PublishMessageResponse;
+import io.camunda.zeebe.client.ZeebeClient;
+import io.camunda.zeebe.client.api.command.FinalCommandStep;
+import io.camunda.zeebe.client.api.command.PublishMessageCommandStep1.PublishMessageCommandStep3;
+import io.camunda.zeebe.client.api.response.PublishMessageResponse;
 import io.zeebe.kafka.connect.sink.message.JsonRecordParser;
 import io.zeebe.kafka.connect.sink.message.JsonRecordParser.Builder;
 import io.zeebe.kafka.connect.sink.message.Message;

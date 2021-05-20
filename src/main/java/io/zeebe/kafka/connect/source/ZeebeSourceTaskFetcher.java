@@ -15,8 +15,8 @@
  */
 package io.zeebe.kafka.connect.source;
 
-import io.zeebe.client.ZeebeClient;
-import io.zeebe.client.api.response.ActivatedJob;
+import io.camunda.zeebe.client.ZeebeClient;
+import io.camunda.zeebe.client.api.response.ActivatedJob;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
