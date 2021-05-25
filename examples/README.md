@@ -13,9 +13,9 @@ All examples will require you to build the project and run the required services
 
 To run the example you need the following tools on your system:
 
-1. [docker-compose](https://docs.docker.com/compose/) to run Kafka and Zeebe
+1. [docker-compose](https://docs.docker.com/compose/) to run Kafka
 1. Java and [maven](https://maven.apache.org/) to build the connector
-1. [Zeebe Modeler](https://github.com/zeebe-io/zeebe-modeler/releases) (optional, but it is a nice addition to graphically model the Zeebe workflows)
+1. [Camunda Modeler](https://camunda.com/download/modeler/)
 
 The following system requirements apply
 
@@ -35,7 +35,7 @@ the artifact is located at: `target/kafka-connect-zeebe-1.0.0-SNAPSHOT-uber.jar`
 
 Copy this JAR to `docker/connectors/`, e.g. `docker/connectors/kafka-connect-zeebe-1.0.0-SNAPSHOT-uber.jar`.
 
-## Start Kafka via Docker Compose (and use Camunda Cloud)
+## Start Kafka via Docker Compose
 
 This project contains a Docker Compose file to startup a nice set of tools for playing around:
 
@@ -62,20 +62,11 @@ Of course you can customize the Docker Compose file to your needs. This Docker C
 - [Zeebe Docker Compose](https://github.com/zeebe-io/zeebe-docker-compose)
 - [CP Docker Images](https://github.com/zeebe-io/zeebe-docker-compose)
 
+## Use Camunda Cloud
 
-## Start Kafka AND Zeebe via Docker Compose
-
-```shell
-cd docker
-docker-compose -f docker-compose-with-zeebe.yml up
-```
-
-This will start everything mentioned above, but also Zeebe locally:
-
-- [Zeebe](https://zeebe.io), on port `26500` for the client, and port `9600` for monitoring.
-    - To check if your Zeebe instance is ready, you can check [http://localhost:9600/ready](http://localhost:9600/ready),
-      which will return a `204` response if ready.
-
+* Login to https://camunda.io/
+* Create a new Zeebe cluster
+* When the new cluster appears in the console, create a new set of client credentials to be used in the connector properties.
 
 ## Running without Docker
 

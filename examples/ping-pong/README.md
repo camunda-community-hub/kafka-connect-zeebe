@@ -51,46 +51,24 @@ be a top level variable.
 
 You can use [`zbctl`](https://github.com/zeebe-io/zeebe/releases) or the Zeebe Modeler to deploy the workflow to Camunda Cloud. 
 
-Using command line, make sure you add the camunda cloud information:
+Now use the command line to to start a process instance, as you then can easily pass variables as JSON. Make sure to replace the Camunda Cloud connection information with your own:
 
 ```shell
-zbctl --address 5be4da01-1f35-4deb-8681-592c7001d1bd.zeebe.camunda.io:443 --clientId 8Yni-2iVjOzUMsai_xQrnoY-y2EGlN_H --clientSecret RH65GZm1N4SygpLEHiqPcPkd80fz_sF2LNZfrAsC6ttIoBy288bkAexscf1PG_PV create instance --variables "{\"name\": \"pong\", \"payload\": { \"foo\": \"bar\"}, \"key\": 1}" ping-pong
-```
-
-If you run Zeebe via the local docker-compose, you can use zbctl from the docker image:
-
-```shell
-docker-compose -f docker/docker-compose.yml exec zeebe \
-  zbctl create instance --insecure --variables "{\"name\": \"pong\", \"payload\": { \"foo\": \"bar\"}, \"key\": 1}" ping-pong
+zbctl --address 8fdfbf36-5c3a-49ff-b5c6-7057d396c88c.zeebe.camunda.io:443 --clientId 6NlBrCXH5knkZsJod2xNaR~Z2Af45mYN --clientSecret TKJVqOUkauL-m93LjGaSlry6q.8~BsVIAiCFXsriK096qTEUbgGKw5q.SjE_YGhi create instance --variables "{\"name\": \"pong\", \"payload\": { \"foo\": \"bar\"}, \"key\": 1}" ping-pong
 ```
 
 
 #### Deploy connectors
 
-If `curl` is not available, you can also use [Control Center](http://localhost:9021) to create the connectors.
+Hint: If `curl` is not available, you can also use [Control Center](http://localhost:9021) to create the connectors.
 
 Make sure to configure the connectors according to the following properties: [source connector properties](source.json), [sink connector properties](sink.json). Especially the Camunda Cloud cluster id and client credentials need to be set (the "\_" is used to comment these lines):
 
 ```json
-    "__zeebe.client.broker.contactPoint": "zeebe:26500",
-    "__zeebe.client.requestTimeout": "10000",
-    "__zeebe.client.security.plaintext": true,
     "zeebe.client.cloud.clusterId": "5be4da01-1f35-4deb-8681-592c7001d1bd",
     "zeebe.client.cloud.clientId": "8Yni-2iVjOzUMsai_xQrnoY-y2EGlN_H",
     "zeebe.client.cloud.clientSecret": "RH65GZm1N4SygpLEHiqPcPkd80fz_sF2LNZfrAsC6ttIoBy288bkAexscf1PG_PV",
 ```
-
-or if you want to use a local Zeebe broker:
-
-```json
-    "zeebe.client.broker.contactPoint": "zeebe:26500",
-    "zeebe.client.requestTimeout": "10000",
-    "zeebe.client.security.plaintext": true,
-    "__zeebe.client.cloud.clusterId": "5be4da01-1f35-4deb-8681-592c7001d1bd",
-    "__zeebe.client.cloud.clientId": "8Yni-2iVjOzUMsai_xQrnoY-y2EGlN_H",
-    "__zeebe.client.cloud.clientSecret": "RH65GZm1N4SygpLEHiqPcPkd80fz_sF2LNZfrAsC6ttIoBy288bkAexscf1PG_PV",
-```
-
 
 Now create the source connector:
 

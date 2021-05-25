@@ -24,7 +24,7 @@ The example needs the payment service to be simulated, means you need to publish
 
 ## Prerequisites
 
-* Install and run Kafka, Kafka Connect and Zeebe as described [here](https://github.com/zeebe-io/kafka-connect-zeebe/tree/master/examples#setup). The following description assumes that Zeebe is started via docker-compose locally.
+* Install and run Kafka, Kafka Connect and Zeebe as described [here](https://github.com/zeebe-io/kafka-connect-zeebe/tree/master/examples#setup). The following description assumes that you leverage a managed Zeebe Cluster in Camunda Cloud.
 
 ## Running the example
 
@@ -79,11 +79,12 @@ steps manually:
 
 #### Deploy workflow
 
-
+Use the Camunda Modeler deploy button.
 
 #### Deploy connectors
 
-If `curl` is not available, you can also use [Control Center](http://localhost:9021) to create the connectors.
+Hint: If `curl` is not available, you can also use [Control Center](http://localhost:9021) to create the connectors.
+
 Make sure to configure them according to the following properties: [source connector properties](source-payment.json), [sink connector properties](sink-payment.json)
 
 Now create the source connector:
