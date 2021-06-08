@@ -7,7 +7,7 @@
   <artifactId>kafka-connect-zeebe</artifactId>
   <groupId>io.zeebe</groupId>
   <packaging>jar</packaging>
-  <version>0.31.0</version>
+  <version>0.31.1-SNAPSHOT</version>
   <inceptionYear>2019</inceptionYear>
   <url>https://github.com/zeebe-io/kafka-connect-zeebe</url>
 
