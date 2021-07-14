@@ -18,13 +18,24 @@ package io.zeebe.kafka.connect.sink.message;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.JsonPathException;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import org.apache.kafka.connect.data.Schema;
+import org.apache.kafka.connect.json.JsonConverter;
 import org.apache.kafka.connect.sink.SinkRecord;
+import org.apache.kafka.connect.storage.Converter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // Eventually extract to interface so we can swap it out for Schema or something
 public final class JsonRecordParser {
   private static final Logger LOGGER = LoggerFactory.getLogger(JsonRecordParser.class);
+  private static final Converter JSON_CONVERTER;
+
+  static {
+    JSON_CONVERTER = new JsonConverter();
+    JSON_CONVERTER.configure(Collections.singletonMap("schemas.enable", "false"), false);
+  }
 
   private JsonPath keyPath;
   private JsonPath namePath;
@@ -50,7 +61,7 @@ public final class JsonRecordParser {
     final Message.Builder builder = Message.builder();
 
     try {
-      final DocumentContext document = parseDocument(record.value());
+      final DocumentContext document = parseRecordValue(record);
       builder
           .withId(generateId(record))
           .withKey(document.read(keyPath).toString())
@@ -72,9 +83,17 @@ public final class JsonRecordParser {
   }
 
   /**
+   * If given a schema, use {@link JsonConverter#fromConnectData(String, Schema, Object)} to parse the value.
    * If given a string parse the JSON document, otherwise delegate to {@link JsonPath#parse(Object)}
    */
-  private DocumentContext parseDocument(final Object value) {
+  private DocumentContext parseRecordValue(final SinkRecord record) {
+    Object value = record.value();
+
+    if (record.valueSchema() != null) {
+      final byte[] bytes = JSON_CONVERTER.fromConnectData(record.topic(), record.valueSchema(), record.value());
+      value = new String(bytes, StandardCharsets.UTF_8);
+    }
+
     if (value instanceof String) {
       return JsonPath.parse((String) value);
     }

@@ -69,6 +69,17 @@ public final class Message {
     return timeToLive != null;
   }
 
+  @Override
+  public String toString() {
+    return "Message{"
+      + "id='" + id  + '\''
+      + ", name='" + name  + '\''
+      + ", key='" + key + '\''
+      + ", variables=" + variables
+      + ", timeToLive=" + timeToLive
+      + '}';
+  }
+
   public static final class Builder {
     private String id;
     private String name;
