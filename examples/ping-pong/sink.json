@@ -12,9 +12,10 @@
     "__zeebe.client.gateway.address": "zeebe:26500",
     "__zeebe.client.requestTimeout": "10000",
     "__zeebe.client.security.plaintext": true,
-    "zeebe.client.cloud.clusterId": "8fdfbf36-5c3a-49ff-b5c6-7057d396c88c",
-    "zeebe.client.cloud.clientId": "6NlBrCXH5knkZsJod2xNaR~Z2Af45mYN",
-    "zeebe.client.cloud.clientSecret": "TKJVqOUkauL-m93LjGaSlry6q.8~BsVIAiCFXsriK096qTEUbgGKw5q.SjE_YGhi",
+    "zeebe.client.cloud.clusterId": "be6a9cea-47eb-44f1-bb6b-7cc262cb2505",
+    "zeebe.client.cloud.region": "bru-2",
+    "zeebe.client.cloud.clientId": "fynMHXxaVi11_vFiOC_VxWctLIqEfGeX",
+    "zeebe.client.cloud.clientSecret": "6XPmJXJE~c80dXYjr7PxHelpsgrysH0v.VF8BFH9WGOfaX1pxpeHgi2_Q8711QoE",
 
     "message.path.messageName": "$.variablesAsMap.name",
     "message.path.correlationKey": "$.variablesAsMap.key",

@@ -47,6 +47,10 @@ be a top level variable.
 
 ## Running the example
 
+### Create topic
+
+Create topic `pong` in Kafka
+
 ### Deploy workflow
 
 You can use [`zbctl`](https://github.com/zeebe-io/zeebe/releases) or the Zeebe Modeler to deploy the workflow to Camunda Cloud. 
@@ -54,7 +58,7 @@ You can use [`zbctl`](https://github.com/zeebe-io/zeebe/releases) or the Zeebe M
 Now use the command line to to start a process instance, as you then can easily pass variables as JSON. Make sure to replace the Camunda Cloud connection information with your own:
 
 ```shell
-zbctl --address 8fdfbf36-5c3a-49ff-b5c6-7057d396c88c.zeebe.camunda.io:443 --clientId 6NlBrCXH5knkZsJod2xNaR~Z2Af45mYN --clientSecret TKJVqOUkauL-m93LjGaSlry6q.8~BsVIAiCFXsriK096qTEUbgGKw5q.SjE_YGhi create instance --variables "{\"name\": \"pong\", \"payload\": { \"foo\": \"bar\"}, \"key\": 1}" ping-pong
+zbctl --address 8fdfbf36-5c3a-49ff-b5c6-7057d396c88c.bru-2.zeebe.camunda.io:443 --clientId 6NlBrCXH5knkZsJod2xNaR~Z2Af45mYN --clientSecret TKJVqOUkauL-m93LjGaSlry6q.8~BsVIAiCFXsriK096qTEUbgGKw5q.SjE_YGhi create instance --variables "{\"name\": \"pong\", \"payload\": { \"foo\": \"bar\"}, \"key\": 1}" ping-pong
 ```
 
 
@@ -66,6 +70,7 @@ Make sure to configure the connectors according to the following properties: [so
 
 ```json
     "zeebe.client.cloud.clusterId": "5be4da01-1f35-4deb-8681-592c7001d1bd",
+    "zeebe.client.cloud.region": "bru-2",
     "zeebe.client.cloud.clientId": "8Yni-2iVjOzUMsai_xQrnoY-y2EGlN_H",
     "zeebe.client.cloud.clientSecret": "RH65GZm1N4SygpLEHiqPcPkd80fz_sF2LNZfrAsC6ttIoBy288bkAexscf1PG_PV",
 ```
