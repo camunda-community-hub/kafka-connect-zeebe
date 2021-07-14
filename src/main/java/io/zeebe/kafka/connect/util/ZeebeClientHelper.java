@@ -17,6 +17,7 @@ package io.zeebe.kafka.connect.util;
 
 import io.camunda.zeebe.client.ZeebeClient;
 import io.camunda.zeebe.client.ZeebeClientBuilder;
+import io.camunda.zeebe.client.ZeebeClientCloudBuilderStep1.ZeebeClientCloudBuilderStep2.ZeebeClientCloudBuilderStep3.ZeebeClientCloudBuilderStep4;
 import java.time.Duration;
 import org.apache.kafka.common.config.AbstractConfig;
 
@@ -33,12 +34,19 @@ public class ZeebeClientHelper {
           config.getString(ZeebeClientConfigDef.CAMUNDA_CLOUD_CLIENT_ID_CONFIG);
       final String camundaCloudCliendSecret =
           config.getString(ZeebeClientConfigDef.CAMUNDA_CLOUD_CLIENT_SECRET_CONFIG);
+      final String camundaCloudRegion =
+          config.getString(ZeebeClientConfigDef.CAMUNDA_CLOUD_REGION_CONFIG);
 
-      return ZeebeClient.newCloudClientBuilder()
-          .withClusterId(camundaCloudClusterId)
-          .withClientId(camundaCloudClientId)
-          .withClientSecret(camundaCloudCliendSecret)
-          .build();
+      final ZeebeClientCloudBuilderStep4 builder =
+          ZeebeClient.newCloudClientBuilder()
+              .withClusterId(camundaCloudClusterId)
+              .withClientId(camundaCloudClientId)
+              .withClientSecret(camundaCloudCliendSecret);
+
+      if (camundaCloudRegion != null) {
+        builder.withRegion(camundaCloudRegion);
+      }
+      return builder.build();
     } else {
       // Zeebe directly (e.g. localhost)
       final ZeebeClientBuilder zeebeClientBuilder =

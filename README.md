@@ -58,6 +58,7 @@ In order to communicate with the Zeebe workflow engine, the connector has to cre
 If you want to connect to Camunda Cloud, you can use these properties:
 
 - `zeebe.client.cloud.clusterId`: Cluster ID you want to connect to. The Cluster must run on the public Camunda Cloud
+- `zeebe.client.cloud.region`: If you don't connect to the default region (`bru-2`) you can specify the region here
 - `zeebe.client.cloud.clientId`: Client ID for the connection. Ideally, create dedicated client credentials for this communication using the Camunda Cloud Console.
 - `zeebe.client.cloud.clientSecret`: The Client Secret required
 - `zeebe.client.requestTimeout`: timeout in milliseconds for requests to the Zeebe broker; defaults to `10000` (or 10 seconds)
@@ -73,12 +74,20 @@ If you want to connect to a Zeebe broker hosted yourself (e.g. running on localh
 
 #### Common Configuration
 
-> For client and job worker configuration, we reuse the system properties as used by Zeebe, so if you already have a properties file
-  for those they should simply work.
+The Zeebe client and job workers can be configured by system properties understood by the [Zeebe Java Client](https://docs.camunda.io/docs/product-manuals/clients/java-client/index). Typical other properties are:
 
-The connector does not yet support [schemas](https://docs.confluent.io/current/schema-registry/connect.html), and currently expect
-all records to be JSON. Therefore, in order to properly construct a message, we use JSON path to extract properties from the Kafka
-record. These paths are all configurable per connector.
+- `zeebe.client.worker.maxJobsActive`: the maximum number of jobs that the worker can activate in a single request; defaults to `100`
+- `zeebe.client.job.worker`: the worker name; defaults to `kafka-connector`
+- `zeebe.client.job.timeout`: how long before a job activated by the worker is made activatable again to others, in milliseconds; defaults to `5000` (or 5 seconds)
+- `job.types`: a comma-separated list of job types that should be consumed by the connector; defaults to `kafka`
+- `job.header.topics`: the [custom service task header](https://docs.zeebe.io/bpmn-workflows/service-tasks.html#task-headers) which specifies to which topics the message should be published to; defaults to `kafka-topic`
+
+You can find sample properties for the source connector [here](config/quickstart-zeebe-source.properties).
+
+## Sink
+
+The connector does support [schemas](https://docs.confluent.io/current/schema-registry/connect.html), but only supports JSON. The connector will use JSON path to extract certain properties from this JSON data:
+
 
 - `message.path.correlationKey`: JSONPath query to use to extract the correlation key from the record; defaults to `$.correlationKey`
 - `message.path.messageName`: JSONPath query to use to extract the message name from the record; defaults to `$.messageName`
@@ -89,33 +98,11 @@ You can find sample properties for the sink connector [here](config/quickstart-z
 
 ## Source
 
-Similar to receiving a message, in a workflow model you can also throw messages (i.e. the message throw event). Zeebe does not yet support
-this BPMN feature; what we can do to allow communication with external systems through Kafka, however, is use service tasks.
-
-In a workflow you can then add a [ServiceTask](https://docs.zeebe.io/bpmn-workflows/service-tasks.html) with a configurable task type which will create a record on the configured Kafka topic:
+Similar to receiving a message, the process can also create records. In your BPMN process model you can add a [ServiceTask](https://docs.zeebe.io/bpmn-workflows/service-tasks.html) with a configurable task type which will create a record on the configured Kafka topic:
 
 ![Overview](doc/images/source-example.png)
 
-Under the hood, the connector will create one [job worker](https://docs.zeebe.io/basics/job-workers.html) per configured task type, consume their jobs, and publish records
-to Kafka based on those. As we do not yet support schemas, the record values are a JSON representation of the job itself, and the record keys are the job key.
-
-### Configuration
-
-In order to communicate with Zeebe, the connector has to create a Zeebe client, which must be configured with the following properties:
-
-- `zeebe.client.gateway.address`: the Zeebe broker address, specified as `host:port`; defaults to `localhost:26500`
-- `zeebe.client.requestTimeout`: timeout in milliseconds for requests to the Zeebe broker; defaults to `10000` (or 10 seconds)
-
-> For client and job worker configuration, we reuse the system properties as used by Zeebe, so if you already have a properties file
-  for those they should simply work.
-
-- `zeebe.client.worker.maxJobsActive`: the maximum number of jobs that the worker can activate in a single request; defaults to `100`
-- `zeebe.client.job.worker`: the worker name; defaults to `kafka-connector`
-- `zeebe.client.job.timeout`: how long before a job activated by the worker is made activatable again to others, in milliseconds; defaults to `5000` (or 5 seconds)
-- `job.types`: a comma-separated list of job types that should be consumed by the connector; defaults to `kafka`
-- `job.header.topics`: the [custom service task header](https://docs.zeebe.io/bpmn-workflows/service-tasks.html#task-headers) which specifies to which topics the message should be published to; defaults to `kafka-topic`
-
-You can find sample properties for the source connector [here](config/quickstart-zeebe-source.properties).
+Under the hood, the connector will create one [job worker](https://docs.camunda.io/docs/product-manuals/concepts/job-workers) that publishes records to Kafka. The record value is a JSON representation of the job itself, the record key is the job key.
 
 ### Filtering Variables
 
@@ -131,7 +118,7 @@ If this custom header is not present, then all variables in the scope will be se
 
 Kafka Connect allows you to configure what happens if a message cannot be processed. A great explanation can be found in [Kafka Connect Deep Dive – Error Handling and Dead Letter Queues](https://www.confluent.io/blog/kafka-connect-deep-dive-error-handling-dead-letter-queues). This of course also applies to this connector.
 
-# Development
+# Remote Debugging During Development
 
 To ease with development, you can add this environment variable to kafka-connect:
 `"JAVA_TOOL_OPTIONS": "-agentlib:jdwp=transport=dt_socket,address=*:5005,server=y,suspend=n"`

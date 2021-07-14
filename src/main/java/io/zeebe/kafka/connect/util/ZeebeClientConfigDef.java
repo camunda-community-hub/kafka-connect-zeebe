@@ -29,6 +29,7 @@ public final class ZeebeClientConfigDef {
   public static final String USE_PLAINTEXT_CONFIG = ClientProperties.USE_PLAINTEXT_CONNECTION;
 
   public static final String CAMUNDA_CLOUD_CLUSTER_ID_CONFIG = "zeebe.client.cloud.clusterId";
+  public static final String CAMUNDA_CLOUD_REGION_CONFIG = "zeebe.client.cloud.region";
   public static final String CAMUNDA_CLOUD_CLIENT_ID_CONFIG = "zeebe.client.cloud.clientId";
   public static final String CAMUNDA_CLOUD_CLIENT_SECRET_CONFIG = "zeebe.client.cloud.clientSecret";
 
@@ -45,6 +46,8 @@ public final class ZeebeClientConfigDef {
 
   private static final String CAMUNDA_CLOUD_CLUSTER_ID_DOC =
       "Camunda Cloud Cluster ID to connect to (on cloud.camunda.io). If set this is used instead of the gateway address.";
+  private static final String CAMUNDA_CLOUD_REGION_DOC =
+      "Camunda Cloud Region the cluster is provisioned in";
   private static final String CAMUNDA_CLOUD_CLIENT_ID_DOC = "Camunda Cloud Client ID";
   private static final String CAMUNDA_CLOUD_CLIENT_SECRET_DOC = "Camunda Cloud Client Secret";
 
@@ -94,6 +97,16 @@ public final class ZeebeClientConfigDef {
             ++order,
             Width.MEDIUM,
             "Zeebe Cluster Id")
+        .define(
+            CAMUNDA_CLOUD_REGION_CONFIG,
+            Type.STRING,
+            null,
+            Importance.LOW,
+            CAMUNDA_CLOUD_REGION_DOC,
+            CLIENT_CONFIG_GROUP,
+            ++order,
+            Width.MEDIUM,
+            "Zeebe Cluster Region")
         .define(
             CAMUNDA_CLOUD_CLIENT_ID_CONFIG,
             Type.STRING,
