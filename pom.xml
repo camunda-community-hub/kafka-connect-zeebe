@@ -14,7 +14,7 @@
   <parent>
     <groupId>org.camunda</groupId>
     <artifactId>camunda-release-parent</artifactId>
-    <version>3.7</version>
+    <version>3.9.1</version>
     <!-- do not remove empty tag - http://jira.codehaus.org/browse/MNG-4687 -->
     <relativePath />
   </parent>
@@ -41,7 +41,7 @@
     <version.junit>5.5.2</version.junit>
     <version.log4j>2.13.3</version.log4j>
     <version.slf4j>1.7.26</version.slf4j>
-    <version.zeebe>1.1.0</version.zeebe>
+    <version.zeebe>1.2.1</version.zeebe>
 
     <!-- plugin version -->
     <plugin.version.assembly>3.1.1</plugin.version.assembly>
@@ -355,7 +355,7 @@
         </plugins>
       </build>
     </profile>
-  </profiles>  
+  </profiles>
 <!--
   <profiles>
     <profile>

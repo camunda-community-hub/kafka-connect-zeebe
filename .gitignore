@@ -3,3 +3,6 @@ target/
 *.iml
 docker/connectors/*
 !docker/connectors/.keep
+.classpath
+.project
+.settings

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" id="Definitions_0dw306c" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Zeebe Modeler" exporterVersion="0.9.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" id="Definitions_0dw306c" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.11.1">
   <bpmn:process id="order" name="Order Fulfillment" isExecutable="true">
     <bpmn:startEvent id="StartEvent_1" name="Wants to pay">
       <bpmn:outgoing>SequenceFlow_1n5obj2</bpmn:outgoing>
@@ -7,6 +7,7 @@
     <bpmn:sequenceFlow id="SequenceFlow_1n5obj2" sourceRef="StartEvent_1" targetRef="ServiceTask_1xwystz" />
     <bpmn:intermediateCatchEvent id="IntermediateThrowEvent_0odchhr" name="Order paid received via Kafka">
       <bpmn:incoming>SequenceFlow_0xaovco</bpmn:incoming>
+      <bpmn:incoming>Flow_0g7up81</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_1nyrhz1</bpmn:outgoing>
       <bpmn:messageEventDefinition messageRef="Message_168848a" />
     </bpmn:intermediateCatchEvent>
@@ -41,10 +42,21 @@
       <bpmn:outgoing>SequenceFlow_0bchnjg</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:sequenceFlow id="SequenceFlow_0bchnjg" sourceRef="ServiceTask_1xwystz" targetRef="Task_1hlq8fc" />
+    <bpmn:boundaryEvent id="Event_1obatyd" name="30s" attachedToRef="Task_1hlq8fc">
+      <bpmn:outgoing>Flow_0g7up81</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_0v06jl3">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT30s</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="Flow_0g7up81" sourceRef="Event_1obatyd" targetRef="IntermediateThrowEvent_0odchhr" />
     <bpmn:textAnnotation id="TextAnnotation_0j6ph45">
       <bpmn:text>TaskType: sendMessage</bpmn:text>
     </bpmn:textAnnotation>
     <bpmn:association id="Association_00jdcdo" sourceRef="ServiceTask_1xwystz" targetRef="TextAnnotation_0j6ph45" />
+    <bpmn:textAnnotation id="TextAnnotation_1nyv5bs">
+      <bpmn:text>This comes in handy if you don't want to start your own worker to advance the process instance</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_05o4cmc" sourceRef="Event_1obatyd" targetRef="TextAnnotation_1nyv5bs" />
   </bpmn:process>
   <bpmn:message id="Message_168848a" name="OrderPaid">
     <bpmn:extensionElements>
@@ -53,6 +65,12 @@
   </bpmn:message>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="order">
+      <bpmndi:BPMNEdge id="Flow_0g7up81_di" bpmnElement="Flow_0g7up81">
+        <di:waypoint x="530" y="235" />
+        <di:waypoint x="530" y="255" />
+        <di:waypoint x="670" y="255" />
+        <di:waypoint x="670" y="195" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="SequenceFlow_0bchnjg_di" bpmnElement="SequenceFlow_0bchnjg">
         <di:waypoint x="366" y="177" />
         <di:waypoint x="462" y="177" />
@@ -97,7 +115,7 @@
       <bpmndi:BPMNShape id="IntermediateCatchEvent_1615mxr_di" bpmnElement="IntermediateThrowEvent_0odchhr">
         <dc:Bounds x="652" y="159" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="641" y="202" width="60" height="40" />
+          <dc:Bounds x="625" y="121.5" width="90" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="EndEvent_1b1dmrd_di" bpmnElement="IntermediateThrowEvent_061efmr">
@@ -118,9 +136,22 @@
       <bpmndi:BPMNShape id="TextAnnotation_0j6ph45_di" bpmnElement="TextAnnotation_0j6ph45">
         <dc:Bounds x="357" y="81" width="151" height="30" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_1nyv5bs_di" bpmnElement="TextAnnotation_1nyv5bs">
+        <dc:Bounds x="530" y="280" width="158" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0lm6vr6_di" bpmnElement="Event_1obatyd">
+        <dc:Bounds x="512" y="199" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="502" y="242" width="19" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Association_00jdcdo_di" bpmnElement="Association_00jdcdo">
         <di:waypoint x="366" y="153" />
         <di:waypoint x="415" y="111" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_05o4cmc_di" bpmnElement="Association_05o4cmc">
+        <di:waypoint x="540" y="232" />
+        <di:waypoint x="570" y="280" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
