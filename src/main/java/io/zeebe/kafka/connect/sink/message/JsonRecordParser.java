@@ -83,14 +83,16 @@ public final class JsonRecordParser {
   }
 
   /**
-   * If given a schema, use {@link JsonConverter#fromConnectData(String, Schema, Object)} to parse the value.
-   * If given a string parse the JSON document, otherwise delegate to {@link JsonPath#parse(Object)}
+   * If given a schema, use {@link JsonConverter#fromConnectData(String, Schema, Object)} to parse
+   * the value. If given a string parse the JSON document, otherwise delegate to {@link
+   * JsonPath#parse(Object)}
    */
   private DocumentContext parseRecordValue(final SinkRecord record) {
     Object value = record.value();
 
     if (record.valueSchema() != null) {
-      final byte[] bytes = JSON_CONVERTER.fromConnectData(record.topic(), record.valueSchema(), record.value());
+      final byte[] bytes =
+          JSON_CONVERTER.fromConnectData(record.topic(), record.valueSchema(), record.value());
       value = new String(bytes, StandardCharsets.UTF_8);
     }
 

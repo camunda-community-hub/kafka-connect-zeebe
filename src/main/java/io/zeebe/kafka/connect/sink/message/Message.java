@@ -72,12 +72,20 @@ public final class Message {
   @Override
   public String toString() {
     return "Message{"
-      + "id='" + id  + '\''
-      + ", name='" + name  + '\''
-      + ", key='" + key + '\''
-      + ", variables=" + variables
-      + ", timeToLive=" + timeToLive
-      + '}';
+        + "id='"
+        + id
+        + '\''
+        + ", name='"
+        + name
+        + '\''
+        + ", key='"
+        + key
+        + '\''
+        + ", variables="
+        + variables
+        + ", timeToLive="
+        + timeToLive
+        + '}';
   }
 
   public static final class Builder {
