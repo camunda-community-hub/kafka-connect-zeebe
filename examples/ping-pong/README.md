@@ -51,9 +51,9 @@ be a top level variable.
 
 Create topic `pong` in Kafka
 
-### Deploy workflow
+### Deploy process
 
-You can use [`zbctl`](https://github.com/zeebe-io/zeebe/releases) or the Zeebe Modeler to deploy the workflow to Camunda Cloud. 
+You can use [`zbctl`](https://github.com/zeebe-io/zeebe/releases) or the [Camunda Modeler](https://camunda.com/download/modeler/) to deploy the process to Camunda Cloud. 
 
 Now use the command line to to start a process instance, as you then can easily pass variables as JSON. Make sure to replace the Camunda Cloud connection information with your own:
 

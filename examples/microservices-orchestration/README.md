@@ -28,58 +28,13 @@ The example needs the payment service to be simulated, means you need to publish
 
 ## Running the example
 
-The simplest way to run through it is to use the provided `Makefile`. If that's not an
-option on your system, then you can run all the steps manually.
+Follow the following steps
 
-### Makefile
 
-> To use the `Makefile` you will also need [curl](https://curl.haxx.se/).
+### Deploy process
 
-Running `make` deploy all resources, and create a single workflow instance. Broken down into steps:
+You can use [`zbctl`](https://github.com/zeebe-io/zeebe/releases) or the [Camunda Modeler](https://camunda.com/download/modeler/) to deploy the process to Camunda Cloud. 
 
-#### Deploy workflow and connectors
-
-```shell
-make workflow source sink
-```
-
-#### Create an instance
-
-```shell
-make workflow
-```
-
-#### Start the logger worker
-
-```shell
-make logger
-```
-
-#### Publishing a message
-
-To publish a message back through the connector, we have to produce a record on the `payment-confirm` topic. The record should have the format as described above.
-
-To publish a message, run:
-
-```shell
-make payment
-```
-
-This will start the [kafka-console-producer](https://kafka.apache.org/quickstart#quickstart_send).
-Simply write the expected JSON record, e.g.:
-
-```json
-{"eventType": "OrderPaid", "orderId": 1, "amount": 4000}
-``` 
-
-### Manually
-
-If `make` is not available on your system (if on Windows, WSL could help there), then you can run
-steps manually:
-
-#### Deploy workflow
-
-Use the Camunda Modeler deploy button.
 
 #### Deploy connectors
 
@@ -100,22 +55,23 @@ curl -X POST -H "Content-Type: application/json" --data @payment-sink.json http:
 
 #### Create a workflow instance
 
-We can now create a workflow instance:
+Now use the command line to to start a process instance, as you then can easily pass variables as JSON. Make sure to replace the Camunda Cloud connection information with your own:
 
 ```shell
-docker-compose -f docker/docker-compose.yml exec zeebe zbctl create instance --variables "{\"orderId\": 1}" order
+zbctl --address 8fdfbf36-5c3a-49ff-b5c6-7057d396c88c.bru-2.zeebe.camunda.io:443 --clientId 6NlBrCXH5knkZsJod2xNaR~Z2Af45mYN --clientSecret TKJVqOUkauL-m93LjGaSlry6q.8~BsVIAiCFXsriK096qTEUbgGKw5q.SjE_YGhi create instance --variables "{\"orderId\": 1}" order
 ```
 
 Replace the value of the `orderId` variable to change the correlation key.
 
 #### Logger worker
 
-Open a separate console, navigate to the root project directory, and run
+Using Linux (or Mac) you can easily open a separate console, navigate to the root project directory, and run a worker directing all jobs to the console:
 
 ```shell
-  docker-compose -f docker/docker-compose.yml exec zeebe /bin/bash -c \
-		"zbctl create worker --handler cat --maxJobsActive 1 payment-requested & zbctl create worker --handler cat --maxJobsActive 1 payment-confirmed"
+zbctl --address 8fdfbf36-5c3a-49ff-b5c6-7057d396c88c.bru-2.zeebe.camunda.io:443 --clientId 6NlBrCXH5knkZsJod2xNaR~Z2Af45mYN --clientSecret TKJVqOUkauL-m93LjGaSlry6q.8~BsVIAiCFXsriK096qTEUbgGKw5q.SjE_YGhi create worker --handler cat --maxJobsActive 1 payment-requested  & zbctl --address 8fdfbf36-5c3a-49ff-b5c6-7057d396c88c.bru-2.zeebe.camunda.io:443 --clientId 6NlBrCXH5knkZsJod2xNaR~Z2Af45mYN --clientSecret TKJVqOUkauL-m93LjGaSlry6q.8~BsVIAiCFXsriK096qTEUbgGKw5q.SjE_YGhi create worker --handler cat --maxJobsActive 1 payment-confirmed
 ```
+
+If you do not want to start this worker, you can also simply wait 30 seconds for the time in BPMN to kick in and just skip the logging step.
 
 #### Confirming order (Kafka Producer)
 
