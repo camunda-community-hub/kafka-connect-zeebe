@@ -12,11 +12,10 @@
   <url>https://github.com/zeebe-io/kafka-connect-zeebe</url>
 
   <parent>
-    <groupId>org.camunda</groupId>
-    <artifactId>camunda-release-parent</artifactId>
-    <version>3.9.1</version>
-    <!-- do not remove empty tag - http://jira.codehaus.org/browse/MNG-4687 -->
-    <relativePath />
+      <groupId>org.camunda.community</groupId>
+      <artifactId>community-hub-release-parent</artifactId>
+      <version>1.2.2</version>    
+      <relativePath />
   </parent>
 
   <properties>
