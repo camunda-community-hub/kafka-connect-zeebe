@@ -29,7 +29,7 @@ import java.util.function.Function;
  * once the function returns.
  *
  * <p>{@link ManagedClient#close()} will flag the client as closing, and will close it immediately
- * iff it is not currently in use.
+ * if it is not currently in use.
  */
 public class ManagedClient {
   private final Lock lock;
