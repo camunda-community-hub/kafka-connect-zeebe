@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.camunda.zeebe.client.api.ZeebeFuture;
 import io.camunda.zeebe.client.api.command.FinalCommandStep;
 import io.camunda.zeebe.client.api.response.PublishMessageResponse;
+import io.camunda.zeebe.client.impl.worker.ExponentialBackoffBuilderImpl;
 import io.grpc.Status;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
@@ -130,7 +131,7 @@ class ZeebeSinkFutureTest {
   }
 
   private ZeebeSinkFuture create(final Runnable r) {
-    return new ZeebeSinkFuture(new FinalStepMock(r));
+    return new ZeebeSinkFuture(new FinalStepMock(r), new ExponentialBackoffBuilderImpl().build());
   }
 
   static class FinalStepMock implements FinalCommandStep<PublishMessageResponse> {

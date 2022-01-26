@@ -17,11 +17,15 @@ package io.zeebe.kafka.connect.sink;
 
 import io.camunda.zeebe.client.api.command.FinalCommandStep;
 import io.camunda.zeebe.client.api.response.PublishMessageResponse;
+import io.camunda.zeebe.client.api.worker.BackoffSupplier;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,8 +55,15 @@ class ZeebeSinkFuture extends CompletableFuture<PublishMessageResponse> {
 
   private final FinalCommandStep<PublishMessageResponse> command;
 
-  ZeebeSinkFuture(final FinalCommandStep<PublishMessageResponse> command) {
+  // TODO inject reusable executor
+  private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+  private BackoffSupplier backoffSupplier;
+  private long currentRetryDelay = 50L;
+
+  ZeebeSinkFuture(
+      final FinalCommandStep<PublishMessageResponse> command, BackoffSupplier backoffSupplier) {
     this.command = command;
+    this.backoffSupplier = backoffSupplier;
   }
 
   @SuppressWarnings("unchecked")
@@ -73,7 +84,9 @@ class ZeebeSinkFuture extends CompletableFuture<PublishMessageResponse> {
                 if (SUCCESS_CODES.contains(code)) {
                   complete(null);
                 } else if (RETRIABLE_CODES.contains(code)) {
-                  executeAsync();
+                  currentRetryDelay = backoffSupplier.supplyRetryDelay(currentRetryDelay);
+                  LOGGER.trace("Retry " + command + " after seeing " + code + ", backoff/delay: " + currentRetryDelay + " ms");
+                  executor.schedule(this::executeAsync, currentRetryDelay, TimeUnit.MILLISECONDS);
                 } else if (FAILURE_CODES.contains(code)) {
                   completeExceptionally(throwable);
                 } else {
