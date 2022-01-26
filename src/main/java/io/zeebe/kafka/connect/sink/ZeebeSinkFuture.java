@@ -18,7 +18,6 @@ package io.zeebe.kafka.connect.sink;
 import io.camunda.zeebe.client.api.command.FinalCommandStep;
 import io.camunda.zeebe.client.api.response.PublishMessageResponse;
 import io.camunda.zeebe.client.api.worker.BackoffSupplier;
-import io.camunda.zeebe.client.impl.worker.ExponentialBackoffBuilderImpl;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
 import java.util.EnumSet;
@@ -27,14 +26,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class ZeebeSinkFuture extends CompletableFuture<PublishMessageResponse> {
-
-  // TODO inject reusable executor
-  final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
   public static final Set<Code> SUCCESS_CODES = EnumSet.of(Code.OK, Code.ALREADY_EXISTS);
   public static final Set<Code> RETRIABLE_CODES =
@@ -60,10 +55,15 @@ class ZeebeSinkFuture extends CompletableFuture<PublishMessageResponse> {
 
   private final FinalCommandStep<PublishMessageResponse> command;
 
+  // TODO inject reusable executor
+  private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+  private BackoffSupplier backoffSupplier;
   private long currentRetryDelay = 50L;
 
-  ZeebeSinkFuture(final FinalCommandStep<PublishMessageResponse> command) {
+  ZeebeSinkFuture(
+      final FinalCommandStep<PublishMessageResponse> command, BackoffSupplier backoffSupplier) {
     this.command = command;
+    this.backoffSupplier = backoffSupplier;
   }
 
   @SuppressWarnings("unchecked")
@@ -84,18 +84,8 @@ class ZeebeSinkFuture extends CompletableFuture<PublishMessageResponse> {
                 if (SUCCESS_CODES.contains(code)) {
                   complete(null);
                 } else if (RETRIABLE_CODES.contains(code)) {
-                  // TODO inject reusable BackoffSupplier
-                  final long maxDelay = 1_000L;
-                  final long minDelay = 50L;
-                  final double jitterFactor = 0.2;
-                  final BackoffSupplier supplier =
-                      new ExponentialBackoffBuilderImpl()
-                          .maxDelay(maxDelay)
-                          .minDelay(minDelay)
-                          .backoffFactor(1.5)
-                          .jitterFactor(jitterFactor)
-                          .build();
-                  currentRetryDelay = supplier.supplyRetryDelay(currentRetryDelay);
+                  currentRetryDelay = backoffSupplier.supplyRetryDelay(currentRetryDelay);
+                  LOGGER.trace("Retry " + command + " after seeing " + code + ", backoff/delay: " + currentRetryDelay + " ms");
                   executor.schedule(this::executeAsync, currentRetryDelay, TimeUnit.MILLISECONDS);
                 } else if (FAILURE_CODES.contains(code)) {
                   completeExceptionally(throwable);

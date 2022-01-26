@@ -19,6 +19,8 @@ import io.camunda.zeebe.client.ZeebeClient;
 import io.camunda.zeebe.client.api.command.FinalCommandStep;
 import io.camunda.zeebe.client.api.command.PublishMessageCommandStep1.PublishMessageCommandStep3;
 import io.camunda.zeebe.client.api.response.PublishMessageResponse;
+import io.camunda.zeebe.client.api.worker.BackoffSupplier;
+import io.camunda.zeebe.client.impl.worker.ExponentialBackoffBuilderImpl;
 import io.zeebe.kafka.connect.sink.message.JsonRecordParser;
 import io.zeebe.kafka.connect.sink.message.JsonRecordParser.Builder;
 import io.zeebe.kafka.connect.sink.message.Message;
@@ -41,12 +43,20 @@ public class ZeebeSinkTask extends SinkTask {
 
   private ManagedClient managedClient;
   private JsonRecordParser parser;
+  private BackoffSupplier backoffSupplier;
 
   @Override
   public void start(final Map<String, String> props) {
     final ZeebeSinkConnectorConfig config = new ZeebeSinkConnectorConfig(props);
     managedClient = new ManagedClient(ZeebeClientHelper.buildClient(config));
     parser = buildParser(config);
+    backoffSupplier =
+        new ExponentialBackoffBuilderImpl()
+            .maxDelay(1000L)
+            .minDelay(50L)
+            .backoffFactor(1.5)
+            .jitterFactor(0.2)
+            .build();
   }
 
   // The documentation specifies that we probably shouldn't block here but I'm not sure what the
@@ -82,7 +92,7 @@ public class ZeebeSinkTask extends SinkTask {
         sinkRecords
             .stream()
             .map(r -> this.preparePublishRequest(client, r))
-            .map(ZeebeSinkFuture::new)
+            .map(command -> new ZeebeSinkFuture(command, backoffSupplier))
             .map(ZeebeSinkFuture::executeAsync)
             .toArray(CompletableFuture[]::new);
 
