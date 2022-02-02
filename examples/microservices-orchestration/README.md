@@ -13,7 +13,7 @@ The example needs the payment service to be simulated, means you need to publish
 
 ```json
 {
-  "eventType": "OrderPaid", 
+  "eventType": "OrderPaid",
   "orderId": 1,
   "amount": 4000
 }
@@ -33,7 +33,7 @@ Follow the following steps
 
 ### Deploy process
 
-You can use [`zbctl`](https://github.com/zeebe-io/zeebe/releases) or the [Camunda Modeler](https://camunda.com/download/modeler/) to deploy the process to Camunda Cloud. 
+You can use [`zbctl`](https://github.com/zeebe-io/zeebe/releases) or the [Camunda Modeler](https://camunda.com/download/modeler/) to deploy the process to Camunda Cloud.
 
 
 #### Deploy connectors
@@ -58,7 +58,7 @@ curl -X POST -H "Content-Type: application/json" --data @payment-sink.json http:
 Now use the command line to to start a process instance, as you then can easily pass variables as JSON. Make sure to replace the Camunda Cloud connection information with your own:
 
 ```shell
-zbctl --address 8fdfbf36-5c3a-49ff-b5c6-7057d396c88c.bru-2.zeebe.camunda.io:443 --clientId 6NlBrCXH5knkZsJod2xNaR~Z2Af45mYN --clientSecret TKJVqOUkauL-m93LjGaSlry6q.8~BsVIAiCFXsriK096qTEUbgGKw5q.SjE_YGhi create instance --variables "{\"orderId\": 1}" order
+zbctl --address $ZEEBE_ADDRESS --clientId $ZEEBE_CLIENT_ID --clientSecret $ZEEBE_CLIENT_SECRET create instance --variables "{\"orderId\": 1}" order
 ```
 
 Replace the value of the `orderId` variable to change the correlation key.
@@ -68,7 +68,7 @@ Replace the value of the `orderId` variable to change the correlation key.
 Using Linux (or Mac) you can easily open a separate console, navigate to the root project directory, and run a worker directing all jobs to the console:
 
 ```shell
-zbctl --address 8fdfbf36-5c3a-49ff-b5c6-7057d396c88c.bru-2.zeebe.camunda.io:443 --clientId 6NlBrCXH5knkZsJod2xNaR~Z2Af45mYN --clientSecret TKJVqOUkauL-m93LjGaSlry6q.8~BsVIAiCFXsriK096qTEUbgGKw5q.SjE_YGhi create worker --handler cat --maxJobsActive 1 payment-requested  & zbctl --address 8fdfbf36-5c3a-49ff-b5c6-7057d396c88c.bru-2.zeebe.camunda.io:443 --clientId 6NlBrCXH5knkZsJod2xNaR~Z2Af45mYN --clientSecret TKJVqOUkauL-m93LjGaSlry6q.8~BsVIAiCFXsriK096qTEUbgGKw5q.SjE_YGhi create worker --handler cat --maxJobsActive 1 payment-confirmed
+zbctl --address $ZEEBE_ADDRESS --clientId $ZEEBE_CLIENT_ID --clientSecret $ZEEBE_CLIENT_SECRET create worker --handler cat --maxJobsActive 1 payment-requested  & zbctl --address 8fdfbf36-5c3a-49ff-b5c6-7057d396c88c.bru-2.zeebe.camunda.io:443 --clientId 6NlBrCXH5knkZsJod2xNaR~Z2Af45mYN --clientSecret TKJVqOUkauL-m93LjGaSlry6q.8~BsVIAiCFXsriK096qTEUbgGKw5q.SjE_YGhi create worker --handler cat --maxJobsActive 1 payment-confirmed
 ```
 
 If you do not want to start this worker, you can also simply wait 30 seconds for the time in BPMN to kick in and just skip the logging step.
@@ -86,6 +86,6 @@ To confirm the order, we can write a record of the following format:
 
 ```json
 {"eventType": "OrderPaid", "orderId": 1, "amount": 4000}
-``` 
+```
 
 Make sure to update the `orderId` to match the expected correlation key.

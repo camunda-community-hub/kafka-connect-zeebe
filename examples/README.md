@@ -26,17 +26,22 @@ You need the following tools on your system:
 * Login to https://camunda.io/
 * Create a new Zeebe cluster
 * When the new cluster appears in the console, create a new set of client credentials to be used in the connector properties.
+* Enter these credentials to local environments.
+```shell
+cd examples
+source .env.export
+```
 
 ## Create Kafka Cluster on Confluent Cloud
 
 * Login to https://login.confluent.io/login
 * Create a new Kafka cluster
 * When the new cluster appears in the console, create a new set of client credentials
-* Enter these credentials in `docker/docker-compose-confluent-cloud.yml`, three times that look like:
+* Enter these credentials in .env file (see folder docker)
 
-```
-      CONNECT_SASL_JAAS_CONFIG: "org.apache.kafka.common.security.plain.PlainLoginModule required \
-      username=\"7XLMBPRBYSG4PTMS\" password=\"hmS0wgnCc2gzQcPVOtcH78kIhJjbR4qzuilzLbmBgQeDJwR/YURUeZl3ocgZrgLS\";"
+```shell
+cd docker
+cp .env.example .env
 ```
 
 ## Build the connector
