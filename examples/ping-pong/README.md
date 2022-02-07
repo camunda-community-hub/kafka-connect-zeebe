@@ -53,12 +53,14 @@ Create topic `pong` in Kafka
 
 ### Deploy process
 
-You can use [`zbctl`](https://github.com/zeebe-io/zeebe/releases) or the [Camunda Modeler](https://camunda.com/download/modeler/) to deploy the process to Camunda Cloud. 
+You can use [`zbctl`](https://github.com/zeebe-io/zeebe/releases) or
+the [Camunda Modeler](https://camunda.com/download/modeler/) to deploy the process to Camunda Cloud.
 
-Now use the command line to to start a process instance, as you then can easily pass variables as JSON. Make sure to replace the Camunda Cloud connection information with your own:
+Now use the command line to to start a process instance, as you then can easily pass variables as JSON. Make sure to
+replace the Camunda Cloud connection information with your own:
 
 ```shell
-zbctl --address 8fdfbf36-5c3a-49ff-b5c6-7057d396c88c.bru-2.zeebe.camunda.io:443 --clientId 6NlBrCXH5knkZsJod2xNaR~Z2Af45mYN --clientSecret TKJVqOUkauL-m93LjGaSlry6q.8~BsVIAiCFXsriK096qTEUbgGKw5q.SjE_YGhi create instance --variables "{\"name\": \"pong\", \"payload\": { \"foo\": \"bar\"}, \"key\": 1}" ping-pong
+zbctl --address $ZEEBE_ADDRESS --clientId $ZEEBE_CLIENT_ID --clientSecret $ZEEBE_CLIENT_SECRET create instance --variables "{\"name\": \"pong\", \"payload\": { \"foo\": \"bar\"}, \"key\": 1}" ping-pong
 ```
 
 
