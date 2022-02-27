@@ -18,6 +18,8 @@ package io.zeebe.kafka.connect.util;
 import io.camunda.zeebe.client.ZeebeClient;
 import io.camunda.zeebe.client.ZeebeClientBuilder;
 import io.camunda.zeebe.client.ZeebeClientCloudBuilderStep1.ZeebeClientCloudBuilderStep2.ZeebeClientCloudBuilderStep3.ZeebeClientCloudBuilderStep4;
+import io.camunda.zeebe.client.impl.oauth.OAuthCredentialsProvider;
+import io.camunda.zeebe.client.impl.oauth.OAuthCredentialsProviderBuilder;
 import java.time.Duration;
 import org.apache.kafka.common.config.AbstractConfig;
 
@@ -28,27 +30,26 @@ public class ZeebeClientHelper {
 
     final String camundaCloudClusterId =
         config.getString(ZeebeClientConfigDef.CAMUNDA_CLOUD_CLUSTER_ID_CONFIG);
+    final String clientId = config.getString(ZeebeClientConfigDef.CLIENT_ID_CONFIG);
+    final String clientSecret = config.getString(ZeebeClientConfigDef.CLIENT_SECRET_CONFIG);
+
     if (camundaCloudClusterId != null) {
       // Camunda Cloud
-      final String camundaCloudClientId =
-          config.getString(ZeebeClientConfigDef.CAMUNDA_CLOUD_CLIENT_ID_CONFIG);
-      final String camundaCloudCliendSecret =
-          config.getString(ZeebeClientConfigDef.CAMUNDA_CLOUD_CLIENT_SECRET_CONFIG);
       final String camundaCloudRegion =
           config.getString(ZeebeClientConfigDef.CAMUNDA_CLOUD_REGION_CONFIG);
 
       final ZeebeClientCloudBuilderStep4 builder =
           ZeebeClient.newCloudClientBuilder()
               .withClusterId(camundaCloudClusterId)
-              .withClientId(camundaCloudClientId)
-              .withClientSecret(camundaCloudCliendSecret);
+              .withClientId(clientId)
+              .withClientSecret(clientSecret);
 
       if (camundaCloudRegion != null) {
         builder.withRegion(camundaCloudRegion);
       }
       return builder.build();
     } else {
-      // Zeebe directly (e.g. localhost)
+      // Zeebe directly or self-managed (e.g. localhost)
       final ZeebeClientBuilder zeebeClientBuilder =
           ZeebeClient.newClientBuilder()
               .gatewayAddress(config.getString(ZeebeClientConfigDef.GATEWAY_ADDRESS_CONFIG))
@@ -57,6 +58,19 @@ public class ZeebeClientHelper {
 
       if (config.getBoolean(ZeebeClientConfigDef.USE_PLAINTEXT_CONFIG)) {
         zeebeClientBuilder.usePlaintext();
+      }
+
+      if (clientId != null) {
+        final String tokenAudience =
+            config.getString(ZeebeClientConfigDef.ZEEBE_TOKEN_AUDIENCE_CONFIG);
+
+        final OAuthCredentialsProvider provider =
+            new OAuthCredentialsProviderBuilder()
+                .clientId(clientId)
+                .clientSecret(clientSecret)
+                .audience(tokenAudience)
+                .build();
+        zeebeClientBuilder.credentialsProvider(provider);
       }
 
       return zeebeClientBuilder.build();
