@@ -21,7 +21,7 @@ You need the following tools on your system:
 1. [Camunda Modeler](https://camunda.com/download/modeler/) to visually inspect the process models
 
 
-## Creat Cluster on Camunda Cloud
+## Create Zeebe Cluster on Camunda Platform SaaS
 
 * Login to https://camunda.io/
 * Create a new Zeebe cluster
