@@ -7,9 +7,9 @@
   <artifactId>kafka-connect-zeebe</artifactId>
   <groupId>io.zeebe</groupId>
   <packaging>jar</packaging>
-  <version>0.32.1-SNAPSHOT</version>
+  <version>0.4.0-SNAPSHOT</version>
   <inceptionYear>2019</inceptionYear>
-  <url>https://github.com/zeebe-io/kafka-connect-zeebe</url>
+  <url>https://github.com/camunda-community-hub/kafka-connect-zeebe</url>
 
   <parent>
       <groupId>org.camunda.community</groupId>
@@ -21,11 +21,6 @@
   <properties>
     <!-- release parent settings -->
     <version.java>1.8</version.java>
-    <nexus.snapshot.repository>
-      https://artifacts.camunda.com/artifactory/zeebe-io-snapshots/
-    </nexus.snapshot.repository>
-    <nexus.release.repository>https://artifacts.camunda.com/artifactory/zeebe-io/
-    </nexus.release.repository>
 
     <!-- disable jdk8 javadoc checks on release build -->
     <additionalparam>-Xdoclint:none</additionalparam>
@@ -40,7 +35,7 @@
     <version.junit>5.5.2</version.junit>
     <version.log4j>2.17.1</version.log4j>
     <version.slf4j>1.7.26</version.slf4j>
-    <version.zeebe>1.3.1</version.zeebe>
+    <version.zeebe>8.0.2</version.zeebe>
 
     <!-- plugin version -->
     <plugin.version.assembly>3.1.1</plugin.version.assembly>
@@ -264,22 +259,22 @@
               <goal>kafka-connect</goal>
             </goals>
             <configuration>
-              <title>Kafka Connect Camunda Cloud / Zeebe</title>
-              <documentationUrl>https://github.com/zeebe-io/kafka-connect-zeebe/</documentationUrl>
+              <title>Kafka Connect Camunda Platform 8 / Zeebe</title>
+              <documentationUrl>https://github.com/camunda-community-hub/kafka-connect-zeebe</documentationUrl>
               <description>
-                This connector connects the Camunda Cloud workflow engine (or standalone Zeebe) with Kafka. This brings BPMN process automation capabilities into the Kafka world.
+This connector connects the Camunda Platform 8 orchestration and workflow engine (Zeebe) with Kafka. This brings BPMN process automation capabilities into the Kafka world.
 
-			    The connector allows to send messages to a Kafka topic when a workflow instance reached a specific task (Kafka Connect Source) and to consume messages from a Kafka topic and correlate them to a process instance (Kafka Connect Sink).
+The connector allows to send messages to a Kafka topic when a workflow instance reached a specific task (Kafka Connect Source) and to consume messages from a Kafka topic and correlate them to a process instance (Kafka Connect Sink).
 
-				Typical use cases are microservices orchestration or processes triggered by certain events.
+Typical use cases are microservices orchestration or processes triggered by certain events.
               </description>
               <logo>logos/camunda.png</logo>
 
               <supportProviderName>Camunda Services GmbH</supportProviderName>
               <supportSummary>
-                Camunda supports the Zeebe source and sink connectors as a community project.
+                Camunda supports kafka-connect-zeebe as a community project.
               </supportSummary>
-              <supportUrl>https://github.com/zeebe-io/kafka-connect-zeebe/</supportUrl>
+              <supportUrl>https://github.com/camunda-community-hub/kafka-connect-zeebe</supportUrl>
               <supportLogo>logos/camunda.png</supportLogo>
 
               <ownerUsername>camunda</ownerUsername>
@@ -296,7 +291,7 @@
               <tags>
                 <tag>zeebe</tag>
                 <tag>camunda</tag>
-                <tag>camunda cloud</tag>
+                <tag>BPMN</tag>
                 <tag>process automation</tag>
                 <tag>workflow</tag>
                 <tag>workflow automation</tag>
@@ -304,7 +299,7 @@
               </tags>
 
               <requirements>
-                <requirement>Zeebe ${version.zeebe}</requirement>
+                <requirement>Zeebe 8.x (Camunda Platform 8.x - SaaS or Self-Managed)</requirement>
               </requirements>
 
               <deliveryGuarantee>
@@ -414,10 +409,9 @@
   </repositories>
 
   <scm>
-    <url>https://github.com/zeebe-io/kafka-connect-zeebe</url>
-    <connection>scm:git:git@github.com:zeebe-io/kafka-connect-zeebe.git</connection>
-    <developerConnection>scm:git:git@github.com:zeebe-io/kafka-connect-zeebe.git
-    </developerConnection>
+    <url>https://github.com/camunda-community-hub/kafka-connect-zeebe</url>
+    <connection>scm:git:git@github.com:camunda-community-hub/kafka-connect-zeebe.git</connection>
+    <developerConnection>scm:git:git@github.com:camunda-community-hub/kafka-connect-zeebe.git</developerConnection>
     <tag>HEAD</tag>
   </scm>
 </project>

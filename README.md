@@ -9,7 +9,7 @@ This [Kafka Connect](https://docs.confluent.io/current/connect/index.html) conne
 
 * **Consume messages from a Kafka topic and correlate them to a workflow**. This is a Kafka Connect **sink**.
 
-It can work with [Camunda Cloud](https://camunda.com/products/cloud/) or a self-managed Zeebe broker.
+It can work with [Camunda Platform 8](https://camunda.com/platform/) SaaS or self-managed.
 
 ![Overview](doc/images/overview.png)
 
@@ -20,7 +20,7 @@ See this [blog post](https://zeebe.io/blog/2018/12/writing-an-apache-kafka-conne
 
 **[Examples](examples)**
 
-The following video walks you through an example connecting to [Camunda Cloud](https://camunda.com/products/cloud/):
+The following video walks you through an example connecting to [Camunda Platform 8 - SaaS](https://camunda.com/get-started/):
 
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=Sw-5uOuQPVI" target="_blank"><img src="http://img.youtube.com/vi/Sw-5uOuQPVI/0.jpg" alt="Walkthrough" width="240" height="180" border="10" /></a>
 
@@ -45,7 +45,7 @@ In a workflow model you can wait for certain events by name (extracted from the 
 ![Overview](doc/images/sink-example.png)
 
 The sink connector consumes Kafka records and publishes messages constructed from those records to Zeebe.
-This uses the [Zeebe Message Correlation](https://docs.camunda.io/docs/product-manuals/concepts/messages) features.
+This uses the [Zeebe Message Correlation](https://docs.camunda.io/docs/components/concepts/messages/) features.
 So for example if no matching workflow instance is found, the message is buffered for its time-to-live (TTL) and then discarded.
 You could simply ingest all messages from a Kafka topic and check if they correlate to something in Zeebe.
 
@@ -67,20 +67,20 @@ If you want to connect to Camunda Cloud, you can use these properties:
 
 If you want to connect to a Zeebe broker hosted yourself (e.g. running on localhost), use these properties:
 
-- `zeebe.client.gateway.address`: the Zeebe gateway address, specified as `host:port`; defaults to `localhost:26500`
+- `zeebe.client.broker.gateway-address`: the Zeebe gateway address, specified as `host:port`; defaults to `localhost:26500`
 - `zeebe.client.requestTimeout`: timeout in milliseconds for requests to the Zeebe broker; defaults to `10000` (or 10 seconds)
 - `zeebe.client.security.plaintext`: disable secure connections to the gateway for local development setups
 
 
 #### Common Configuration
 
-The Zeebe client and job workers can be configured by system properties understood by the [Zeebe Java Client](https://docs.camunda.io/docs/product-manuals/clients/java-client/index). Typical other properties are:
+The Zeebe client and job workers can be configured by system properties understood by the [Zeebe Java Client](https://docs.camunda.io/docs/apis-clients/java-client/). Typical other properties are:
 
 - `zeebe.client.worker.maxJobsActive`: the maximum number of jobs that the worker can activate in a single request; defaults to `100`
 - `zeebe.client.job.worker`: the worker name; defaults to `kafka-connector`
 - `zeebe.client.job.timeout`: how long before a job activated by the worker is made activatable again to others, in milliseconds; defaults to `5000` (or 5 seconds)
 - `job.types`: a comma-separated list of job types that should be consumed by the connector; defaults to `kafka`
-- `job.header.topics`: the [custom service task header](https://docs.zeebe.io/bpmn-workflows/service-tasks.html#task-headers) which specifies to which topics the message should be published to; defaults to `kafka-topic`
+- `job.header.topics`: the [custom service task header](https://docs.camunda.io/docs/components/modeler/bpmn/service-tasks/#task-headers) which specifies to which topics the message should be published to; defaults to `kafka-topic`
 
 You can find sample properties for the source connector [here](config/quickstart-zeebe-source.properties).
 

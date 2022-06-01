@@ -11,7 +11,7 @@ ways:
 
 All examples will require you to build the project and run the Kafka Connect via docker. While docker is not the only way to run the examples, it provides the quickest get started experience and thus is the only option described here. Refer to [Kafka Connect Installation](https://docs.confluent.io/3.1.2/connect/userguide.html) for more options on running Kafka Connect.
 
-You will leverage [Camunda Cloud](https://camunda.com/products/cloud/) to use a managed Zeebe instance
+You will leverage [Camunda Platform 8 - SaaS](https://camunda.com/get-started/) to use a managed Zeebe instance
 You can use [Confluent Cloud](https://www.confluent.io/confluent-cloud/) to use a managed Kafka installation (recommended) - or you start Kafka via Docker as described below.
 
 You need the following tools on your system:
