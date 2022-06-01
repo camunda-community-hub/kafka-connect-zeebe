@@ -85,7 +85,14 @@ class ZeebeSinkFuture extends CompletableFuture<PublishMessageResponse> {
                   complete(null);
                 } else if (RETRIABLE_CODES.contains(code)) {
                   currentRetryDelay = backoffSupplier.supplyRetryDelay(currentRetryDelay);
-                  LOGGER.trace("Retry " + command + " after seeing " + code + ", backoff/delay: " + currentRetryDelay + " ms");
+                  LOGGER.trace(
+                      "Retry "
+                          + command
+                          + " after seeing "
+                          + code
+                          + ", backoff/delay: "
+                          + currentRetryDelay
+                          + " ms");
                   executor.schedule(this::executeAsync, currentRetryDelay, TimeUnit.MILLISECONDS);
                 } else if (FAILURE_CODES.contains(code)) {
                   completeExceptionally(throwable);
