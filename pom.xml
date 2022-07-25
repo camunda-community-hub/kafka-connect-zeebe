@@ -45,7 +45,7 @@
     <plugin.version.fmt>2.6.0</plugin.version.fmt>
     <plugin.version.kafka.connect>0.11.2</plugin.version.kafka.connect>
     <plugin.version.license>3.0</plugin.version.license>
-    <plugin.version.surefire>2.22.1</plugin.version.surefire>
+    <plugin.version.surefire>2.22.2</plugin.version.surefire>
 
     <!-- maven extensions -->
     <extension.version.os-maven-plugin>1.6.1</extension.version.os-maven-plugin>
