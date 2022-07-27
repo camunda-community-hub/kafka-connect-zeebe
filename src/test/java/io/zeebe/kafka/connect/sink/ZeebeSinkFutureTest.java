@@ -62,8 +62,7 @@ class ZeebeSinkFutureTest {
   @Test
   void shouldCompleteIfAcceptableStatusException() {
     // given
-    ZeebeSinkFuture.SUCCESS_CODES
-        .stream()
+    ZeebeSinkFuture.SUCCESS_CODES.stream()
         .map(this::create)
         .forEach(
             future -> {
@@ -77,8 +76,7 @@ class ZeebeSinkFutureTest {
   @Test
   void shouldCompleteIfRetriableStatusException() {
     // given
-    ZeebeSinkFuture.RETRIABLE_CODES
-        .stream()
+    ZeebeSinkFuture.RETRIABLE_CODES.stream()
         .map(this::retriable)
         .map(this::create)
         .forEach(
@@ -93,8 +91,7 @@ class ZeebeSinkFutureTest {
   @Test
   void shouldCompleteExceptionalIfNonRecoverableStatusException() {
     // given
-    ZeebeSinkFuture.FAILURE_CODES
-        .stream()
+    ZeebeSinkFuture.FAILURE_CODES.stream()
         .map(this::create)
         .forEach(
             future -> {

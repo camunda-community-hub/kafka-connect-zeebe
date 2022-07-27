@@ -51,8 +51,7 @@ class ZeebeSourceTaskFetcher {
       final int amount,
       final Duration requestTimeout) {
     final Map<Boolean, List<ActivatedJob>> jobs =
-        activateJobs(client, jobType, amount, requestTimeout)
-            .stream()
+        activateJobs(client, jobType, amount, requestTimeout).stream()
             .collect(Collectors.partitioningBy(this::isJobValid));
 
     final List<ActivatedJob> validJobs = jobs.get(true);

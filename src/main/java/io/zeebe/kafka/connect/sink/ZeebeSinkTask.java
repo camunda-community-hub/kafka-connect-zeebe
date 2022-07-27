@@ -89,8 +89,7 @@ public class ZeebeSinkTask extends SinkTask {
   private CompletableFuture<Void> publishMessages(
       final ZeebeClient client, final Collection<SinkRecord> sinkRecords) {
     final CompletableFuture[] inFlightRequests =
-        sinkRecords
-            .stream()
+        sinkRecords.stream()
             .map(r -> this.preparePublishRequest(client, r))
             .map(command -> new ZeebeSinkFuture(command, backoffSupplier))
             .map(ZeebeSinkFuture::executeAsync)
