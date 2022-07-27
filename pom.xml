@@ -31,7 +31,7 @@
     <!-- project dependencies -->
     <version.assertj>3.23.1</version.assertj>
     <version.kafka>2.3.0</version.kafka>
-    <version.jsonpath>2.4.0</version.jsonpath>
+    <version.jsonpath>2.7.0</version.jsonpath>
     <version.junit>5.9.0</version.junit>
     <version.log4j>2.18.0</version.log4j>
     <version.slf4j>1.7.36</version.slf4j>
