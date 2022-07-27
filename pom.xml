@@ -42,7 +42,7 @@
     <plugin.version.checkstyle>3.0.0</plugin.version.checkstyle>
     <plugin.version.enforcer>3.0.0-M2</plugin.version.enforcer>
     <plugin.version.failsafe>2.22.1</plugin.version.failsafe>
-    <plugin.version.fmt>2.6.0</plugin.version.fmt>
+    <plugin.version.fmt>2.13</plugin.version.fmt>
     <plugin.version.kafka.connect>0.11.2</plugin.version.kafka.connect>
     <plugin.version.license>3.0</plugin.version.license>
     <plugin.version.surefire>2.22.2</plugin.version.surefire>
