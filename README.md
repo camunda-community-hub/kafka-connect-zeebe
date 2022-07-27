@@ -53,15 +53,19 @@ You could simply ingest all messages from a Kafka topic and check if they correl
 
 In order to communicate with the Zeebe workflow engine, the connector has to create a Zeebe client.
 
-#### Camunda Cloud Properties
+#### Camunda SaaS Properties
 
-If you want to connect to Camunda Cloud, you can use these properties:
+If you want to connect to Camunda SaaS, you can use these properties:
 
 - `zeebe.client.cloud.clusterId`: Cluster ID you want to connect to. The Cluster must run on the public Camunda Cloud
 - `zeebe.client.cloud.region`: If you don't connect to the default region (`bru-2`) you can specify the region here
-- `zeebe.client.cloud.clientId`: Client ID for the connection. Ideally, create dedicated client credentials for this communication using the Camunda Cloud Console.
+- `zeebe.client.cloud.clientId`: Client ID for the connection. Ideally, create dedicated client credentials for this communication using the Camunda SaaS Console.
 - `zeebe.client.cloud.clientSecret`: The Client Secret required
 - `zeebe.client.requestTimeout`: timeout in milliseconds for requests to the Zeebe broker; defaults to `10000` (or 10 seconds)
+
+If you want to connect to another endpoint than the public SaaS endpoint, you can further specify:
+- `zeebe.client.cloud.token.audience`: The address for which the authorization server token should be valid
+- `zeebe.client.cloud.authorization.server.url`: The URL of the authorization server from which the access token will be requested (by default, configured for Camunda SaaS)";
 
 #### Zeebe Broker Properties
 

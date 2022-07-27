@@ -32,6 +32,9 @@ public final class ZeebeClientConfigDef {
   public static final String CAMUNDA_CLOUD_REGION_CONFIG = "zeebe.client.cloud.region";
   public static final String CAMUNDA_CLOUD_CLIENT_ID_CONFIG = "zeebe.client.cloud.clientId";
   public static final String CAMUNDA_CLOUD_CLIENT_SECRET_CONFIG = "zeebe.client.cloud.clientSecret";
+  public static final String ZEEBE_TOKEN_AUDIENCE_CONFIG = "zeebe.client.cloud.token.audience";
+  public static final String ZEEBE_AUTHORIZATION_SERVER_URL_CONFIG =
+      "zeebe.client.cloud.authorization.server.url";
 
   private static final String CLIENT_CONFIG_GROUP = "Zeebe Client";
   private static final String GATEWAY_ADDRESS_DEFAULT = "localhost:26500";
@@ -45,11 +48,17 @@ public final class ZeebeClientConfigDef {
       "Disable secure connection to gateway for the Zeebe client";
 
   private static final String CAMUNDA_CLOUD_CLUSTER_ID_DOC =
-      "Camunda Cloud Cluster ID to connect to (on cloud.camunda.io). If set this is used instead of the gateway address.";
+      "Camunda SaaS Cluster ID to connect to (on cloud.camunda.io). If set this is used instead of the gateway address.";
   private static final String CAMUNDA_CLOUD_REGION_DOC =
-      "Camunda Cloud Region the cluster is provisioned in";
-  private static final String CAMUNDA_CLOUD_CLIENT_ID_DOC = "Camunda Cloud Client ID";
-  private static final String CAMUNDA_CLOUD_CLIENT_SECRET_DOC = "Camunda Cloud Client Secret";
+      "Camunda SaaS Region the cluster is provisioned in";
+  private static final String CAMUNDA_CLOUD_CLIENT_ID_DOC = "Camunda SaaS Client ID";
+  private static final String CAMUNDA_CLOUD_CLIENT_SECRET_DOC = "Camunda SaaS Client Secret";
+  private static final String ZEEBE_TOKEN_AUDIENCE_DOC =
+      "The address for which the authorization server token should be valid";
+  private static final String ZEEBE_AUTHORIZATION_SERVER_URL_DOC =
+      "The URL of the authorization server from which the access token will be requested (by default, configured for Camunda SaaS)";
+  private static final String ZEEBE_CLIENT_CONFIG_PATH_DOC =
+      "The path to a cache file where the access tokens will be stored (by default, it's $HOME/.camunda/credentials)";
 
   private ZeebeClientConfigDef() {}
 
@@ -126,6 +135,26 @@ public final class ZeebeClientConfigDef {
             CLIENT_CONFIG_GROUP,
             ++order,
             Width.MEDIUM,
-            "Zeebe Client Secret");
+            "Zeebe Client Secret")
+        .define(
+            ZEEBE_TOKEN_AUDIENCE_CONFIG,
+            Type.STRING,
+            null,
+            Importance.LOW,
+            ZEEBE_TOKEN_AUDIENCE_DOC,
+            CLIENT_CONFIG_GROUP,
+            ++order,
+            Width.MEDIUM,
+            "Zeebe Token Audience")
+        .define(
+            ZEEBE_AUTHORIZATION_SERVER_URL_CONFIG,
+            Type.STRING,
+            null,
+            Importance.LOW,
+            ZEEBE_AUTHORIZATION_SERVER_URL_DOC,
+            CLIENT_CONFIG_GROUP,
+            ++order,
+            Width.MEDIUM,
+            "Zeebe Authorization Server URL");
   }
 }
