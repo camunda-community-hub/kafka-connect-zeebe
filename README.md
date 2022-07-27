@@ -110,13 +110,18 @@ Under the hood, the connector will create one [job worker](https://docs.camunda.
 
 ### Filtering Variables
 
-You can filter the variables being sent to Kafka by adding a custom header to the "sendMessage" task with the configuration option "job.variables".
+You can filter the variables being sent to Kafka by adding a configuration option "job.variables" to your source properties. It must contain a comma-separated list of variables to pass to Kafka.
 
-Set the value of this key to a comma-separated list of variables to pass to Kafka.
+If this property is not present, then all variables in the scope will be sent to Kafka by default.
 
-If this custom header is not present, then all variables in the scope will be sent to Kafka by default.
-
-![Filter Variables](doc/images/variables-custom-header.png)
+```properties
+{
+  "name": "ping",
+  "config": {
+    ...
+    "job.variables": "a, b, andSomeVariableC",
+    ...
+```
 
 ## Configuring Error Handling of Kafka Connect, e.g. Logging or Dead Letter Queues
 
