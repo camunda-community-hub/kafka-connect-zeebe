@@ -42,7 +42,7 @@
     <plugin.version.checkstyle>3.1.2</plugin.version.checkstyle>
     <plugin.version.enforcer>3.0.0-M2</plugin.version.enforcer>
     <plugin.version.failsafe>2.22.1</plugin.version.failsafe>
-    <plugin.version.fmt>2.13</plugin.version.fmt>
+    <plugin.version.fmt>2.19</plugin.version.fmt>
     <plugin.version.kafka.connect>0.11.2</plugin.version.kafka.connect>
     <plugin.version.license>4.1</plugin.version.license>
     <plugin.version.surefire>2.22.2</plugin.version.surefire>
@@ -207,7 +207,7 @@
 
       <!-- Google code format plugin -->
       <plugin>
-        <groupId>com.coveo</groupId>
+        <groupId>com.spotify.fmt</groupId>
         <artifactId>fmt-maven-plugin</artifactId>
         <version>${plugin.version.fmt}</version>
         <executions>
