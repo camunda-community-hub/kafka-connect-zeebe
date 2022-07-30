@@ -31,7 +31,7 @@ public class ZeebeSourceConnectorConfig extends AbstractConfig {
   static final String MAX_JOBS_TO_ACTIVATE_CONFIG = ClientProperties.JOB_WORKER_MAX_JOBS_ACTIVE;
   static final String JOB_TIMEOUT_CONFIG = ClientProperties.DEFAULT_JOB_TIMEOUT;
   static final String JOB_HEADER_TOPICS_CONFIG = "job.header.topics";
-  static final String JOB_VARIABLES_CONFIG = "job.variables";
+  static final String JOB_HEADER_VARIABLES_CONFIG = "job.header.variables";
   private static final String WORKER_CONFIG_GROUP = "Job Worker";
   private static final String WORKER_NAME_DEFAULT = "kafka-connector";
   private static final String WORKER_NAME_DOC = "Name of the Zeebe worker that will poll jobs";
@@ -50,10 +50,10 @@ public class ZeebeSourceConnectorConfig extends AbstractConfig {
       "Zeebe service task extension header key which determines to what Kafka topic a job should "
           + "be published. The value of the header is expected to be a comma-separated list of "
           + "Kafka topics on which the source record will be published.";
-  private static final String JOB_VARIABLES_DEFAULT = "";
-  private static final String JOB_VARIABLES_DOC =
-      "A comma-separated list of variables to fetch when activating a job. If none given, then "
-          + "all variables are fetched.";
+  private static final String JOB_HEADER_VARIABLES_DEFAULT = "";
+  private static final String JOB_HEADER_VARIABLES_DOC =
+      "A comma-separated list of variables to send in the Kafka message. If none given, then "
+          + "all variables are sent.";
 
   public ZeebeSourceConnectorConfig(final Map<String, String> properties) {
     super(DEFINITIONS, properties);
@@ -122,14 +122,14 @@ public class ZeebeSourceConnectorConfig extends AbstractConfig {
             Width.SHORT,
             "Job topics header")
         .define(
-            JOB_VARIABLES_CONFIG,
-            Type.LIST,
-            JOB_VARIABLES_DEFAULT,
+            JOB_HEADER_VARIABLES_CONFIG,
+            Type.STRING,
+            JOB_HEADER_VARIABLES_DEFAULT,
             Importance.LOW,
-            JOB_VARIABLES_DOC,
+            JOB_HEADER_VARIABLES_DOC,
             WORKER_CONFIG_GROUP,
             ++order,
             Width.SHORT,
-            "Job variables");
+            "Job variables header");
   }
 }
