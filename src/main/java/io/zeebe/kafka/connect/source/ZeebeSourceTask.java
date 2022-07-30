@@ -17,6 +17,7 @@ package io.zeebe.kafka.connect.source;
 
 import io.camunda.zeebe.client.ZeebeClient;
 import io.camunda.zeebe.client.api.response.ActivatedJob;
+import io.camunda.zeebe.client.impl.ZeebeObjectMapper;
 import io.zeebe.kafka.connect.util.ManagedClient;
 import io.zeebe.kafka.connect.util.ManagedClient.AlreadyClosedException;
 import io.zeebe.kafka.connect.util.VersionInfo;
@@ -34,17 +35,22 @@ import org.apache.kafka.connect.source.SourceTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Source task for Zeebe which activates jobs, publishes results, and completes jobs */
+/**
+ * Source task for Zeebe which activates jobs, publishes results, and completes
+ * jobs
+ */
 public class ZeebeSourceTask extends SourceTask {
   private static final Logger LOGGER = LoggerFactory.getLogger(ZeebeSourceTask.class);
 
   private ManagedClient managedClient;
   private ZeebeSourceTopicExtractor topicExtractor;
+  private ZeebeSourceJobVariablesExtractor jobVariablesExtractor;
   private ZeebeSourceTaskFetcher taskFetcher;
   private ZeebeSourceInflightRegistry inflightRegistry;
   private ZeebeSourceBackoff backoff;
 
-  public ZeebeSourceTask() {}
+  public ZeebeSourceTask() {
+  }
 
   @Override
   public void start(final Map<String, String> props) {
@@ -53,6 +59,7 @@ public class ZeebeSourceTask extends SourceTask {
     managedClient = new ManagedClient(client);
 
     topicExtractor = new ZeebeSourceTopicExtractor(config);
+    jobVariablesExtractor = new ZeebeSourceJobVariablesExtractor(config);
     taskFetcher = new ZeebeSourceTaskFetcher(config, topicExtractor);
     inflightRegistry = new ZeebeSourceInflightRegistry(config);
     backoff = new ZeebeSourceBackoff(config);
@@ -67,13 +74,12 @@ public class ZeebeSourceTask extends SourceTask {
       return null;
     }
 
-    final List<SourceRecord> records =
-        inflightRegistry
-            .jobTypesWithCapacity()
-            .flatMap(this::fetchJobs)
-            .map(inflightRegistry::registerJob)
-            .map(this::transformJob)
-            .collect(Collectors.toList());
+    final List<SourceRecord> records = inflightRegistry
+        .jobTypesWithCapacity()
+        .flatMap(this::fetchJobs)
+        .map(inflightRegistry::registerJob)
+        .map(this::transformJob)
+        .collect(Collectors.toList());
 
     // poll interface specifies to return null instead of empty
     if (records.isEmpty()) {
@@ -142,11 +148,14 @@ public class ZeebeSourceTask extends SourceTask {
 
   private SourceRecord transformJob(final ActivatedJob job) {
     final String topic = topicExtractor.extract(job);
-    final Map<String, Integer> sourcePartition =
-        Collections.singletonMap("partitionId", decodePartitionId(job.getKey()));
-    // a better sourceOffset would be the position but we don't have it here unfortunately
-    // key is however a monotonically increasing value, so in a sense it can provide a good
-    // approximation of an offset
+    final Map<String, Object> variables = extractJobVariables(jobVariablesExtractor.extract(job),
+        job.getVariablesAsMap());
+
+    final Map<String, Integer> sourcePartition = Collections.singletonMap("partitionId",
+        decodePartitionId(job.getKey()));
+    // a better sourceOffset would be the position but we don't have it here
+    // unfortunately, key is however a monotonically increasing value, so in a sense
+    // it can provide a good approximation of an offset
     final Map<String, Long> sourceOffset = Collections.singletonMap("key", job.getKey());
     return new SourceRecord(
         sourcePartition,
@@ -155,12 +164,26 @@ public class ZeebeSourceTask extends SourceTask {
         Schema.INT64_SCHEMA,
         job.getKey(),
         Schema.STRING_SCHEMA,
-        job.toJson());
+        new ZeebeObjectMapper().toJson(variables));
   }
 
-  // Copied from Zeebe Protocol as it is currently fixed to Java 11, and the connector to Java 8
+  // Copied from Zeebe Protocol as it is currently fixed to Java 11, and the
+  // connector to Java 8
   // Should be fixed eventually and we can use the protocol directly again
   private int decodePartitionId(final long key) {
     return (int) (key >> 51);
+  }
+
+  private Map<String, Object> extractJobVariables(final List<String> jobVariableNamesList,
+      final Map<String, Object> jobVariablesAsMap) {
+    final Map<String, Object> variables;
+    if (jobVariableNamesList != null) {
+      variables = jobVariablesAsMap.entrySet().stream()
+          .filter(x -> jobVariableNamesList.contains(x.getKey()))
+          .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    } else {
+      variables = jobVariablesAsMap;
+    }
+    return variables;
   }
 }
