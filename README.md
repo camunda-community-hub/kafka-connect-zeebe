@@ -2,6 +2,8 @@
 [![Lifecycle: Incubating](https://img.shields.io/badge/Lifecycle-Incubating-blue)](https://github.com/Camunda-Community-Hub/community/blob/main/extension-lifecycle.md#incubating-)
 ![Compatible with: Camunda Platform 8](https://img.shields.io/badge/Compatible%20with-Camunda%20Platform%208-0072Ce)
 
+> :warning: **This is not the official Kafka connector for Camunda 8.** The Kafka Producer and Kafka Consumer connectors are found [here.](https://docs.camunda.io/docs/components/connectors/out-of-the-box-connectors/kafka/) This project uses [Kafka Connect from Confluence.](https://docs.confluent.io/platform/current/connect/index.html)
+> 
 # kafka-connect-zeebe
 
 This [Kafka Connect](https://docs.confluent.io/current/connect/index.html) connector for [Zeebe](https://zeebe.io) can do two things:
