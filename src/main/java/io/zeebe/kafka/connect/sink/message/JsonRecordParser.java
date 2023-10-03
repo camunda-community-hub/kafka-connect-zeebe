@@ -116,7 +116,7 @@ public final class JsonRecordParser {
   private void applyTimeToLiveIfPossible(
       final Message.Builder builder, final DocumentContext document) {
     try {
-      builder.withTimeToLive(document.read(ttlPath));
+      builder.withTimeToLive(document.read(ttlPath, Long.class));
     } catch (final JsonPathException e) {
       LOGGER.trace("No timeToLive found, ignoring");
     }
