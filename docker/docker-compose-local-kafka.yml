@@ -22,7 +22,7 @@ services:
       ZOO_SERVERS: server.1=zookeeper:2888:3888
 
   kafka:
-    image: confluentinc/cp-enterprise-kafka:5.5.3
+    image: confluentinc/cp-enterprise-kafka:5.5.12
     hostname: kafka
     ports:
       - "9092:9092"
