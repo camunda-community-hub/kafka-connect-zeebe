@@ -3,7 +3,7 @@ version: '2.1'
 services:
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.8.3
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.8.23
     ports:
       - "9200:9200"
     environment:
@@ -22,7 +22,7 @@ services:
       ZOO_SERVERS: server.1=zookeeper:2888:3888
 
   kafka:
-    image: confluentinc/cp-enterprise-kafka:5.5.3
+    image: confluentinc/cp-enterprise-kafka:5.5.12
     hostname: kafka
     ports:
       - "9092:9092"
@@ -41,7 +41,7 @@ services:
       - zookeeper
 
   schema-registry:
-    image: confluentinc/cp-schema-registry:5.5.3
+    image: confluentinc/cp-schema-registry:5.5.12
     hostname: schema-registry
     ports:
       - "8081:8081"
@@ -54,7 +54,7 @@ services:
       - kafka
 
   connect:
-    image: confluentinc/cp-kafka-connect:5.5.3
+    image: confluentinc/cp-kafka-connect:5.5.12
     hostname: connect
     ports:
       - "8083:8083"
@@ -85,7 +85,7 @@ services:
       - kafka
 
   control-center:
-    image: confluentinc/cp-enterprise-control-center:5.5.3
+    image: confluentinc/cp-enterprise-control-center:5.5.12
     hostname: control-center
     ports:
       - "9021:9021"

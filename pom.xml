@@ -7,7 +7,7 @@
   <artifactId>kafka-connect-zeebe</artifactId>
   <groupId>io.zeebe</groupId>
   <packaging>jar</packaging>
-  <version>0.40.2-SNAPSHOT</version>
+  <version>0.50.1-SNAPSHOT</version>
   <inceptionYear>2019</inceptionYear>
   <url>https://github.com/camunda-community-hub/kafka-connect-zeebe</url>
 
@@ -29,23 +29,23 @@
     <license.header>com/mycila/maven/plugin/license/templates/APACHE-2.txt</license.header>
 
     <!-- project dependencies -->
-    <version.assertj>3.23.1</version.assertj>
-    <version.kafka>3.2.2</version.kafka>
-    <version.jsonpath>2.7.0</version.jsonpath>
-    <version.junit>5.9.1</version.junit>
-    <version.log4j>2.18.0</version.log4j>
-    <version.slf4j>1.7.36</version.slf4j>
-    <version.zeebe>8.1.9</version.zeebe>
+    <version.assertj>3.24.2</version.assertj>
+    <version.kafka>3.6.0</version.kafka>
+    <version.jsonpath>2.8.0</version.jsonpath>
+    <version.junit>5.10.1</version.junit>
+    <version.log4j>2.20.0</version.log4j>
+    <version.slf4j>2.0.9</version.slf4j>
+    <version.zeebe>8.3.4</version.zeebe>
 
     <!-- plugin version -->
-    <plugin.version.assembly>3.4.2</plugin.version.assembly>
-    <plugin.version.checkstyle>3.2.0</plugin.version.checkstyle>
+    <plugin.version.assembly>3.6.0</plugin.version.assembly>
+    <plugin.version.checkstyle>3.3.1</plugin.version.checkstyle>
     <plugin.version.enforcer>3.0.0-M2</plugin.version.enforcer>
     <plugin.version.failsafe>2.22.1</plugin.version.failsafe>
-    <plugin.version.fmt>2.19</plugin.version.fmt>
+    <plugin.version.fmt>2.21.1</plugin.version.fmt>
     <plugin.version.kafka.connect>0.12.0</plugin.version.kafka.connect>
     <plugin.version.license>4.3</plugin.version.license>
-    <plugin.version.surefire>2.22.2</plugin.version.surefire>
+    <plugin.version.surefire>3.2.3</plugin.version.surefire>
 
     <!-- maven extensions -->
     <extension.version.os-maven-plugin>1.6.1</extension.version.os-maven-plugin>
@@ -328,7 +328,7 @@ Typical use cases are microservices orchestration or processes triggered by cert
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
-            <version>3.0.1</version>
+            <version>3.1.0</version>
             <executions>
                 <execution>
                     <id>sign-artifacts</id>
