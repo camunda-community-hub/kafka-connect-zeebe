@@ -41,7 +41,7 @@ services:
       - zookeeper
 
   schema-registry:
-    image: confluentinc/cp-schema-registry:5.5.3
+    image: confluentinc/cp-schema-registry:5.5.12
     hostname: schema-registry
     ports:
       - "8081:8081"
