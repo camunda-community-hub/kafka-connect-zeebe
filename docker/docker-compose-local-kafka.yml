@@ -54,7 +54,7 @@ services:
       - kafka
 
   connect:
-    image: confluentinc/cp-kafka-connect:5.5.3
+    image: confluentinc/cp-kafka-connect:5.5.12
     hostname: connect
     ports:
       - "8083:8083"
