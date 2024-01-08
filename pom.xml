@@ -34,7 +34,7 @@
     <version.jsonpath>2.8.0</version.jsonpath>
     <version.junit>5.10.1</version.junit>
     <version.log4j>2.22.1</version.log4j>
-    <version.slf4j>2.0.9</version.slf4j>
+    <version.slf4j>2.0.10</version.slf4j>
     <version.zeebe>8.4.0</version.zeebe>
 
     <!-- plugin version -->
