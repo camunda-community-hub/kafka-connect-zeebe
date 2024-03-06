@@ -113,19 +113,20 @@ Under the hood, the connector will create one [job worker](https://docs.camunda.
 
 ### Filtering Variables
 
-You can filter the variables being sent to Kafka by adding a configuration option "job.variables" to your source properties. It must contain a comma-separated list of variables to pass to Kafka.
+You can filter the variables being sent to Kafka by adding a configuration option "job.header.variables" to your source properties. It must contain the name of a [custom service task header](https://docs.camunda.io/docs/components/modeler/bpmn/service-tasks/#task-headers) defined in the Kafka source service task. The value associated with this header is a comma-separated list of variables to pass to Kafka.
 
 If this property is not present, then all variables in the scope will be sent to Kafka by default.
 
 ```properties
+source.json
 {
   "name": "ping",
   "config": {
     ...
-    "job.variables": "a, b, andSomeVariableC",
+    "job.header.variables": "kafkaVariables",
     ...
 ```
-
+![Variables custom header](doc/images/variables-custom-header.png)
 ## Configuring Error Handling of Kafka Connect, e.g. Logging or Dead Letter Queues
 
 Kafka Connect allows you to configure what happens if a message cannot be processed. A great explanation can be found in [Kafka Connect Deep Dive – Error Handling and Dead Letter Queues](https://www.confluent.io/blog/kafka-connect-deep-dive-error-handling-dead-letter-queues). This of course also applies to this connector.

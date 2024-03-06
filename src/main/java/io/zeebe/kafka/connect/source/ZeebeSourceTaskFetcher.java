@@ -32,7 +32,6 @@ class ZeebeSourceTaskFetcher {
 
   private final ZeebeSourceTopicExtractor topicExtractor;
 
-  private final List<String> jobVariables;
   private final Duration jobTimeout;
   private final String workerName;
 
@@ -40,7 +39,6 @@ class ZeebeSourceTaskFetcher {
       final ZeebeSourceConnectorConfig config, final ZeebeSourceTopicExtractor topicExtractor) {
     this.topicExtractor = topicExtractor;
 
-    jobVariables = config.getList(ZeebeSourceConnectorConfig.JOB_VARIABLES_CONFIG);
     jobTimeout = Duration.ofMillis(config.getLong(ZeebeSourceConnectorConfig.JOB_TIMEOUT_CONFIG));
     workerName = config.getString(ZeebeSourceConnectorConfig.WORKER_NAME_CONFIG);
   }
@@ -79,7 +77,6 @@ class ZeebeSourceTaskFetcher {
           .maxJobsToActivate(amount)
           .workerName(workerName)
           .timeout(jobTimeout)
-          .fetchVariables(jobVariables)
           .requestTimeout(requestTimeout)
           .send()
           .get()
