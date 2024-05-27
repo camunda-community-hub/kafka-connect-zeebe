@@ -29,7 +29,7 @@
     <license.header>com/mycila/maven/plugin/license/templates/APACHE-2.txt</license.header>
 
     <!-- project dependencies -->
-    <version.assertj>3.25.3</version.assertj>
+    <version.assertj>3.26.0</version.assertj>
     <version.kafka>3.7.0</version.kafka>
     <version.jsonpath>2.9.0</version.jsonpath>
     <version.junit>5.10.2</version.junit>
