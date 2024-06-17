@@ -17,6 +17,7 @@ package io.zeebe.kafka.connect.source;
 
 import io.camunda.zeebe.client.ZeebeClient;
 import io.camunda.zeebe.client.api.response.ActivatedJob;
+import io.zeebe.kafka.connect.util.ZeebeClientConfigDef;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
@@ -35,6 +36,7 @@ class ZeebeSourceTaskFetcher {
   private final List<String> jobVariables;
   private final Duration jobTimeout;
   private final String workerName;
+  private final Duration requestTimeout;
 
   ZeebeSourceTaskFetcher(
       final ZeebeSourceConnectorConfig config, final ZeebeSourceTopicExtractor topicExtractor) {
@@ -43,15 +45,12 @@ class ZeebeSourceTaskFetcher {
     jobVariables = config.getList(ZeebeSourceConnectorConfig.JOB_VARIABLES_CONFIG);
     jobTimeout = Duration.ofMillis(config.getLong(ZeebeSourceConnectorConfig.JOB_TIMEOUT_CONFIG));
     workerName = config.getString(ZeebeSourceConnectorConfig.WORKER_NAME_CONFIG);
+    requestTimeout = Duration.ofMillis(config.getLong(ZeebeClientConfigDef.REQUEST_TIMEOUT_CONFIG));
   }
 
-  List<ActivatedJob> fetchBatch(
-      final ZeebeClient client,
-      final String jobType,
-      final int amount,
-      final Duration requestTimeout) {
+  List<ActivatedJob> fetchBatch(final ZeebeClient client, final String jobType, final int amount) {
     final Map<Boolean, List<ActivatedJob>> jobs =
-        activateJobs(client, jobType, amount, requestTimeout).stream()
+        activateJobs(client, jobType, amount).stream()
             .collect(Collectors.partitioningBy(this::isJobValid));
 
     final List<ActivatedJob> validJobs = jobs.get(true);
@@ -63,10 +62,7 @@ class ZeebeSourceTaskFetcher {
   }
 
   private List<ActivatedJob> activateJobs(
-      final ZeebeClient client,
-      final String jobType,
-      final int amount,
-      final Duration requestTimeout) {
+      final ZeebeClient client, final String jobType, final int amount) {
     LOGGER.trace(
         "Sending activate jobs command for maximal {} jobs of type {} with request timeout {}",
         amount,

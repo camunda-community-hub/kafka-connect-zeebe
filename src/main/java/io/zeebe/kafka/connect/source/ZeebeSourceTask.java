@@ -21,7 +21,6 @@ import io.zeebe.kafka.connect.util.ManagedClient;
 import io.zeebe.kafka.connect.util.ManagedClient.AlreadyClosedException;
 import io.zeebe.kafka.connect.util.VersionInfo;
 import io.zeebe.kafka.connect.util.ZeebeClientHelper;
-import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -88,11 +87,9 @@ public class ZeebeSourceTask extends SourceTask {
 
   private Stream<ActivatedJob> fetchJobs(final String jobType) {
     final int amount = inflightRegistry.capacityForType(jobType);
-    final Duration requestTimeout = backoff.currentDuration();
+
     try {
-      return managedClient
-          .withClient(c -> taskFetcher.fetchBatch(c, jobType, amount, requestTimeout))
-          .stream();
+      return managedClient.withClient(c -> taskFetcher.fetchBatch(c, jobType, amount)).stream();
     } catch (final AlreadyClosedException e) {
       LOGGER.warn(
           "Expected to activate jobs for type {}, but failed to receive response", jobType, e);
